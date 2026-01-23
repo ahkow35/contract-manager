@@ -1,32 +1,35 @@
 version: '3.8'
 
-services:
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
-    environment:
-      - DEBUG=true
-      - STORAGE_PROVIDER=local
-    volumes:
-      - ./backend:/app
-      - upload_data:/app/uploads
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+# ==============================================================================
+# Highlight Edit - Portainer Stack Deployment
+# ==============================================================================
+# This compose file uses the pre-built image from your registry.
+# The unified image serves both frontend and backend on port 8000.
+#
+# Environment Variables (set in Portainer):
+#   - SECRET_KEY: Your secure secret key
+#   - BETA_INVITE_CODE: Beta access code (default: I-LOVE-NYAN-CAT)
+# ==============================================================================
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+services:
+  highlight-edit:
+    image: registry.fukie.io/highlight_edit:latest
     ports:
-      - "5173:5173"
+      - "9192:8000"
+    environment:
+      - DATABASE_PATH=/data/sql_app.db
+      - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
+      - BETA_INVITE_CODE=${BETA_INVITE_CODE:-I-LOVE-NYAN-CAT}
     volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    depends_on:
-      - backend
-    command: npm run dev -- --host
+      - highlight_data:/data
+    restart: unless-stopped
+    healthcheck:
+      test: [ "CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')" ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
 volumes:
-  upload_data:
+  highlight_data:
+    driver: local

@@ -1,0 +1,38 @@
+version: '3.8'
+
+# ==============================================================================
+# Highlight Edit - Local Development
+# ==============================================================================
+# For local development with hot-reload. Uses local Dockerfiles.
+# Usage: docker-compose -f docker-compose.dev.yml up
+# ==============================================================================
+
+services:
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=true
+      - STORAGE_PROVIDER=local
+      - DATABASE_PATH=/data/sql_app.db
+      - SECRET_KEY=dev-secret-key
+      - BETA_INVITE_CODE=I-LOVE-NYAN-CAT
+    volumes:
+      - ./backend:/app
+      - dev_data:/data
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+
+volumes:
+  dev_data:
