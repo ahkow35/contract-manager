@@ -36,7 +36,7 @@ WORKDIR /app
 
 # Install system dependencies for document processing
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    libgl1 \
+    libgl1-mesa-glx \
     libglib2.0-0 \
     && rm -rf /var/lib/apt/lists/*
 
@@ -53,8 +53,9 @@ COPY --from=frontend-builder /frontend/dist /app/static
 # Create data directory for SQLite persistence
 RUN mkdir -p /data
 
-# Environment variables (SECRET_KEY should be passed at runtime, not baked in)
+# Environment variables with sensible defaults
 ENV DATABASE_PATH=/data/sql_app.db
+ENV SECRET_KEY=change-me-in-production
 ENV BETA_INVITE_CODE=I-LOVE-NYAN-CAT
 ENV PYTHONUNBUFFERED=1
 

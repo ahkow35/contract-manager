@@ -29,12 +29,12 @@ async def upload_document(file: UploadFile = File(...)):
     try:
         if filename_lower.endswith(".pdf"):
             highlights = await extract_pdf_highlights(content)
-        elif filename_lower.endswith(".docx"):
+        elif filename_lower.endswith(".docx") or filename_lower.endswith(".doc"):
             highlights = await extract_docx_highlights(content)
         else:
             raise HTTPException(
                 status_code=400,
-                detail="Unsupported file type. Only PDF and DOCX are supported.",
+                detail="Unsupported file type. Only PDF, DOC, and DOCX are supported.",
             )
 
         return DocumentUploadResponse(

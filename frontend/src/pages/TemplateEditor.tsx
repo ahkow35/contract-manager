@@ -130,6 +130,7 @@ export default function TemplateEditor() {
         accept: {
             'application/pdf': ['.pdf'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
+            'application/msword': ['.doc'],
         },
         maxFiles: 1,
         noClick: !!templateState, // Disable click when template is loaded
@@ -258,7 +259,7 @@ export default function TemplateEditor() {
                                     Drop your document here
                                 </p>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    or click to browse • PDF and DOCX supported
+                                    or click to browse • PDF, DOC, and DOCX supported
                                 </p>
                             </div>
                         )}

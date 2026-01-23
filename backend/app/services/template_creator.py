@@ -281,12 +281,12 @@ def create_template(
     """
     filename_lower = filename.lower()
     
-    if filename_lower.endswith(".docx"):
+    if filename_lower.endswith(".docx") or filename_lower.endswith(".doc"):
         return process_docx_template(file_content, output_dir, filename)
     elif filename_lower.endswith(".pdf"):
         return process_pdf_template(file_content, output_dir, filename)
     else:
-        raise ValueError(f"Unsupported file type: {filename}. Only .docx and .pdf are supported.")
+        raise ValueError(f"Unsupported file type: {filename}. Only .doc, .docx, and .pdf are supported.")
 
 
 # ============ Helper Functions ============
