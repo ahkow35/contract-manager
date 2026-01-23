@@ -11,12 +11,13 @@ from app.models.schemas import HighlightedField
 YELLOW_HIGHLIGHT_INDICES = [7, 11]  # yellow and bright yellow
 
 
-async def extract_docx_highlights(content: bytes) -> List[HighlightedField]:
+async def extract_docx_highlights(content: bytes, filename: str = None) -> List[HighlightedField]:
     """
     Extract yellow highlighted text from a DOCX document.
 
     Args:
         content: DOCX file content as bytes
+        filename: Optional filename to determine if .doc conversion is needed
 
     Returns:
         List of highlighted fields with their text and location
@@ -24,6 +25,11 @@ async def extract_docx_highlights(content: bytes) -> List[HighlightedField]:
     highlights: List[HighlightedField] = []
 
     try:
+        # Convert .doc to .docx if needed
+        if filename and filename.lower().endswith('.doc'):
+            from app.services.doc_converter import convert_doc_to_docx
+            content, filename = convert_doc_to_docx(content, filename)
+        
         # Open DOCX from bytes
         doc = Document(BytesIO(content))
 

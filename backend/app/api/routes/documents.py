@@ -30,7 +30,7 @@ async def upload_document(file: UploadFile = File(...)):
         if filename_lower.endswith(".pdf"):
             highlights = await extract_pdf_highlights(content)
         elif filename_lower.endswith(".docx") or filename_lower.endswith(".doc"):
-            highlights = await extract_docx_highlights(content)
+            highlights = await extract_docx_highlights(content, file.filename)
         else:
             raise HTTPException(
                 status_code=400,
