@@ -15,7 +15,7 @@ services:
   highlight-edit:
     image: registry.fukie.io/highlight_edit:latest
     ports:
-      - "9192:8000"
+      - "9191:8000"
     environment:
       - DATABASE_PATH=/data/sql_app.db
       - SECRET_KEY=${SECRET_KEY:-change-me-in-production}
