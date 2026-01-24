@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { templateApi, TemplateState } from '../services/api';
 import { FieldRow } from '../components/FieldRow';
 import { useAuth } from '../context/AuthContext';
+import InstructionsEmptyState from '../components/InstructionsEmptyState';
 
 interface FormData {
     [key: string]: string;
@@ -224,6 +225,11 @@ export default function TemplateEditor() {
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
                     <p className="text-slate-400">Loading template...</p>
                 </div>
+            )}
+
+            {/* Empty State Instructions */}
+            {!templateState && !location.search.includes('templateId') && (
+                <InstructionsEmptyState />
             )}
 
             {/* Upload State - only show when not loading a template from URL */}
