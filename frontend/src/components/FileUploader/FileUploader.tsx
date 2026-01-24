@@ -34,7 +34,6 @@ function FileUploader() {
         accept: {
             'application/pdf': ['.pdf'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
-            'application/msword': ['.doc'],
         },
         maxFiles: 1,
     });
@@ -105,7 +104,7 @@ function FileUploader() {
                             <>
                                 <p className="dropzone-title">Drag & drop your document here</p>
                                 <p className="dropzone-subtitle">or click to select a file</p>
-                                <p className="dropzone-hint">Supports PDF, DOC, and DOCX files with yellow highlights</p>
+                                <p className="dropzone-hint">Supports PDF and DOCX files with yellow highlights</p>
                             </>
                         )}
                     </div>

@@ -25,11 +25,6 @@ async def extract_docx_highlights(content: bytes, filename: str = None) -> List[
     highlights: List[HighlightedField] = []
 
     try:
-        # Convert .doc to .docx if needed
-        if filename and filename.lower().endswith('.doc'):
-            from app.services.doc_converter import convert_doc_to_docx
-            content, filename = convert_doc_to_docx(content, filename)
-        
         # Open DOCX from bytes
         doc = Document(BytesIO(content))
 

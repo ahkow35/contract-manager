@@ -38,10 +38,10 @@ async def create_template_endpoint(file: UploadFile = File(...)):
     filename_lower = file.filename.lower()
     
     # Validate file type
-    if not (filename_lower.endswith(".docx") or filename_lower.endswith(".doc") or filename_lower.endswith(".pdf")):
+    if not (filename_lower.endswith(".docx") or filename_lower.endswith(".pdf")):
         raise HTTPException(
             status_code=400,
-            detail="Unsupported file type. Only .doc, .docx, and .pdf files are supported."
+            detail="Unsupported file type. Only .docx and .pdf files are supported."
         )
     
     try:
