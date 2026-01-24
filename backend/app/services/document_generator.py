@@ -97,7 +97,8 @@ def _process_paragraph(paragraph, field_values: Dict[str, str]):
                 if pattern in text:
                     text = text.replace(pattern, value)
         
-        run.text = text
+        if text != run.text:
+            run.text = text
         
         # CRITICAL: Strip ALL highlight formatting
         _strip_highlight(run)

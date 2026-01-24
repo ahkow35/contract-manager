@@ -1,7 +1,7 @@
 // Jenkinsfile for HTTPS Registry and Portainer Stack API Deployment
 // Configuration variables for easy reusability
 def imageName = "highlight_edit"
-def stackId = "99999"
+def stackId = "34"
 def endpointId = "3"
 def portainerUrl = "https://portainer.fukie.io"
 def portainerTokenName = "portainer-api-key-admin"
