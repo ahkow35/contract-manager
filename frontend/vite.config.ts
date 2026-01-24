@@ -15,7 +15,7 @@ export default defineConfig({
     server: {
         port: 5173,
         host: true, // Expose on all network interfaces (0.0.0.0)
-        allowedHosts: ['irremissible-triparted-nieves.ngrok-free.dev', '.ngrok-free.dev'],
+        // allowedHosts removed as ngrok is no longer used
         proxy: {
             '/api': {
                 target: LOCAL_BACKEND_URL,

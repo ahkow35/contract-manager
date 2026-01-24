@@ -24,13 +24,8 @@ cd frontend
 npm run dev &
 cd ..
 
-# 4. Start Ngrok
-if [ -f "./ngrok" ]; then
-    echo "Starting Ngrok tunnel..."
-    ./ngrok http 5173 --domain=irremissible-triparted-nieves.ngrok-free.dev &
-else
-    echo "Ngrok binary not found in root directory. Skipping ngrok."
-fi
+# 4. Ngrok removed (not required)
+# Script continues to wait
 
 # Keep script running
 wait

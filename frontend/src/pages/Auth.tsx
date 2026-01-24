@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -7,15 +7,29 @@ const AuthPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [inviteCode, setInviteCode] = useState('');
+    const [rememberEmail, setRememberEmail] = useState(false);
     const [error, setError] = useState('');
     const { login, signup } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('saved_email');
+        if (savedEmail) {
+            setEmail(savedEmail);
+            setRememberEmail(true);
+        }
+    }, []);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
         try {
             if (isLogin) {
+                if (rememberEmail) {
+                    localStorage.setItem('saved_email', email);
+                } else {
+                    localStorage.removeItem('saved_email');
+                }
                 await login(email, password);
             } else {
                 await signup(email, password, inviteCode);
@@ -48,6 +62,9 @@ const AuthPage: React.FC = () => {
                     <div className="rounded-md shadow-sm -space-y-px">
                         <div>
                             <input
+                                id="email"
+                                name="email"
+                                autoComplete="email"
                                 type="email"
                                 required
                                 className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
@@ -58,6 +75,9 @@ const AuthPage: React.FC = () => {
                         </div>
                         <div>
                             <input
+                                id="password"
+                                name="password"
+                                autoComplete={isLogin ? "current-password" : "new-password"}
                                 type="password"
                                 required
                                 className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-b-md' : ''} focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
@@ -80,17 +100,33 @@ const AuthPage: React.FC = () => {
                         )}
                     </div>
 
-                    <div className="flex items-center justify-end">
-                        <div className="text-sm">
-                            <button
-                                type="button"
-                                onClick={() => navigate('/forgot-password')}
-                                className="font-medium text-blue-600 hover:text-blue-500"
-                            >
-                                Forgot your password?
-                            </button>
+                    {isLogin && (
+                        <div className="flex items-center justify-between mt-4">
+                            <div className="flex items-center">
+                                <input
+                                    id="remember_me"
+                                    name="remember_me"
+                                    type="checkbox"
+                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    checked={rememberEmail}
+                                    onChange={(e) => setRememberEmail(e.target.checked)}
+                                />
+                                <label htmlFor="remember_me" className="ml-2 block text-sm text-gray-900">
+                                    Remember my email
+                                </label>
+                            </div>
+
+                            <div className="text-sm">
+                                <button
+                                    type="button"
+                                    onClick={() => navigate('/forgot-password')}
+                                    className="font-medium text-blue-600 hover:text-blue-500"
+                                >
+                                    Forgot your password?
+                                </button>
+                            </div>
                         </div>
-                    </div>
+                    )}
 
                     <div>
                         <button
