@@ -190,7 +190,17 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
             output_filename = get_output_filename(template_path, prefix)
             output_path = os.path.join(os.path.dirname(template_path), output_filename)
             
-            generate_pdf(template_path, field_values, output_path)
+            print(f"DEBUG: Generating PDF from {template_path}")
+            print(f"DEBUG: Field Keys: {list(field_values.keys())}")
+            
+            try:
+                generate_pdf(template_path, field_values, output_path)
+            except Exception as inner_e:
+                print(f"ERROR in generate_pdf: {inner_e}")
+                import traceback
+                traceback.print_exc()
+                raise inner_e
+                
             media_type = "application/pdf"
 
         else:
