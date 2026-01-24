@@ -142,122 +142,49 @@ def process_docx_template(
     )
 
 
-def process_pdf_template(
-    file_content: bytes,
-    output_dir: str,
-    original_filename: str = "document.pdf"
-) -> TemplateState:
-    """
-    Process a PDF file to create a template with placeholders.
     
-    Note: PDF modification is more complex than DOCX. This implementation:
-    1. Extracts highlighted text and their positions
-    2. Creates annotations or overlays for placeholders
-    3. Stores the mapping for later document generation
+    # Use the robust PDF parser service
+    from app.services.pdf_parser import extract_pdf_highlights
+    import asyncio
     
-    Args:
-        file_content: The PDF file content as bytes
-        output_dir: Directory to save the template file
-        original_filename: Original filename for reference
+    # Since this function is sync, we need to run the async parser synchronously
+    # Or better yet, we can make this function async, but that requires updating the call chain
+    # For now, we'll use a simple event loop run or just import the sync logic if we had it.
+    # Actually, let's just use asyncio.run since we are in a thread or separate process usually.
+    # However, if we are already in an event loop (FastAPI), asyncio.run() will fail.
+    # But create_template_async calls create_template (sync) which calls process_pdf_template (sync).
+    # We should probably change extract_pdf_highlights to be sync or handle it carefully.
+    
+    # Actually, looking at pdf_parser.py, fitz is synchronous. The async def was just wrapper.
+    # Let's verify pdf_parser.py first. It is 'async def' but does no 'await'.
+    # So we can just call it like a normal function if we remove 'async' or await it if we are async.
+    
+    # Only problem: extract_pdf_highlights returns HighlightedField, we need DetectedField.
+    
+    # Let's do this:
+    # 1. We will assume we can run it.
+    
+    try:
+        # We need to run the coroutine. 
+        # Since this is called from create_template_async, we can just await it if we make this async?
+        # But process_pdf_template signature is sync.
         
-    Returns:
-        TemplateState containing template path and detected fields
-    """
-    # Open PDF from bytes
-    doc = fitz.open(stream=file_content, filetype="pdf")
+        # Hack: Since pdf_parser logic is purely synchronous (PyMuPDF), we can just copy the logic 
+        # or better, make pdf_parser sync.
+        pass 
+    except:
+        pass
+
+    # RE-STRATEGY: 
+    # The pdf_parser.py function is 'async def extract_pdf_highlights'. 
+    # But inside it calls fitz (sync). 
+    # Options:
+    # A. Change pdf_parser.py to be sync (easiest, it performs no I/O awaiting).
+    # B. Duplicate the logic (bad).
+    # C. Call it with asyncio.run (risky inside another loop).
     
-    fields: List[DetectedField] = []
-    field_counter = 1
-    
-    for page_num in range(len(doc)):
-        page = doc[page_num]
-        
-        # Get all annotations on the page
-        annotations = page.annots()
-        
-        if annotations:
-            annots_to_process = list(annotations)
-            
-            for annot in annots_to_process:
-                # Check if it's a highlight annotation (type 8)
-                if annot.type[0] == 8:
-                    # Get the highlight color
-                    colors = annot.colors
-                    stroke_color = colors.get("stroke", [1, 1, 0]) if colors else [1, 1, 0]
-                    
-                    # Check for yellow highlight
-                    if _is_yellow_color(stroke_color):
-                        # Get text within the highlight rectangle
-                        rect = annot.rect
-                        highlighted_text = page.get_text("text", clip=rect).strip()
-                        
-                        if highlighted_text:
-                            placeholder = f"{{{{field_{field_counter}}}}}"
-                            
-                            fields.append(DetectedField(
-                                id=field_counter,
-                                original_text=highlighted_text,
-                                field_type=_infer_field_type(highlighted_text),
-                                placeholder=placeholder,
-                                page=page_num + 1,
-                            ))
-                            
-                            # Add a text annotation with the placeholder info
-                            # This marks where the field should be replaced
-                            annot.set_info({
-                                "title": f"HighlightEdit Field {field_counter}",
-                                "content": json.dumps({
-                                    "placeholder": placeholder,
-                                    "original": highlighted_text,
-                                }),
-                            })
-                            annot.update()
-                            
-                            field_counter += 1
-        
-        # Also check for text with yellow background (drawn highlights)
-        # Some PDFs use drawing operations instead of annotations
-        text_dict = page.get_text("dict")
-        for block in text_dict.get("blocks", []):
-            if block.get("type") == 0:  # Text block
-                for line in block.get("lines", []):
-                    for span in line.get("spans", []):
-                        # Check if span has yellow background color
-                        bg_color = span.get("color", 0)
-                        # Yellow in PDF color space (approximation)
-                        if _is_yellow_pdf_color(bg_color):
-                            text = span.get("text", "").strip()
-                            if text and not _text_already_captured(text, fields):
-                                placeholder = f"{{{{field_{field_counter}}}}}"
-                                
-                                fields.append(DetectedField(
-                                    id=field_counter,
-                                    original_text=text,
-                                    field_type=_infer_field_type(text),
-                                    placeholder=placeholder,
-                                    page=page_num + 1,
-                                ))
-                                
-                                field_counter += 1
-    
-    # Generate unique template filename
-    template_id = str(uuid.uuid4())[:8]
-    base_name = os.path.splitext(original_filename)[0]
-    template_filename = f"{base_name}_template_{template_id}.pdf"
-    template_path = os.path.join(output_dir, template_filename)
-    
-    # Ensure output directory exists
-    os.makedirs(output_dir, exist_ok=True)
-    
-    # Save the modified PDF
-    doc.save(template_path)
-    doc.close()
-    
-    return TemplateState(
-        template_file_path=template_path,
-        original_file_path=original_filename,
-        fields=fields,
-    )
+    # I saw pdf_parser.py content. It has NO await statements. It is safe to make it sync.
+    # I will first modify pdf_parser.py to be sync.
 
 
 def create_template(
@@ -290,6 +217,87 @@ def create_template(
 
 
 # ============ Helper Functions ============
+
+def process_pdf_template(
+    file_content: bytes,
+    output_dir: str,
+    original_filename: str = "document.pdf"
+) -> TemplateState:
+    """
+    Process a PDF file to create a template with placeholders.
+    """
+    # 1. Extract highlights using the robust parser
+    from app.services.pdf_parser import extract_pdf_highlights
+    
+    print(f"DEBUG: Extracting highlights from {original_filename}")
+    try:
+        # Now synchronous
+        highlights = extract_pdf_highlights(file_content)
+        print(f"DEBUG: Found {len(highlights)} highlights via pdf_parser")
+    except Exception as e:
+        print(f"ERROR: Failed to extract highlights: {e}")
+        raise ValueError(f"Failed to parse PDF: {e}")
+
+    # 2. Open PDF for modification (to add placeholder annotations)
+    doc = fitz.open(stream=file_content, filetype="pdf")
+    
+    fields: List[DetectedField] = []
+    field_counter = 1
+    
+    # 3. Process extracted highlights
+    for h in highlights:
+        # Create placeholder
+        placeholder = f"{{{{field_{field_counter}}}}}"
+        
+        # Create DetectedField
+        field = DetectedField(
+            id=field_counter,
+            original_text=h.original_text,
+            field_type=_infer_field_type(h.original_text),
+            placeholder=placeholder,
+            page=h.page,
+        )
+        fields.append(field)
+        
+        # Add annotation to PDF to mark this field
+        # Note: h.page is 1-indexed, fitz is 0-indexed
+        if 0 <= h.page - 1 < len(doc):
+            page = doc[h.page - 1]
+            rect = fitz.Rect(h.rect['x0'], h.rect['y0'], h.rect['x1'], h.rect['y1'])
+            
+            # We add a text annotation (sticky note) to store metadata
+            # This is used later to identify where to put the text
+            annot = page.add_text_annot(rect.tl, placeholder)
+            annot.set_info({
+                "title": f"HighlightEdit Field {field_counter}",
+                "content": json.dumps({
+                    "placeholder": placeholder,
+                    "original": h.original_text,
+                    "rect": [rect.x0, rect.y0, rect.x1, rect.y1]
+                }),
+            })
+            annot.update()
+        
+        field_counter += 1
+    
+    # Generate unique template filename
+    template_id = str(uuid.uuid4())[:8]
+    base_name = os.path.splitext(original_filename)[0]
+    template_filename = f"{base_name}_template_{template_id}.pdf"
+    template_path = os.path.join(output_dir, template_filename)
+    
+    # Ensure output directory exists
+    os.makedirs(output_dir, exist_ok=True)
+    
+    # Save the modified PDF
+    doc.save(template_path)
+    doc.close()
+    
+    return TemplateState(
+        template_file_path=template_path,
+        original_file_path=original_filename,
+        fields=fields,
+    )
 
 def _process_paragraph_runs(paragraph, para_idx: int, fields: List[DetectedField], field_counter: int) -> int:
     """

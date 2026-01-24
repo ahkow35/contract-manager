@@ -28,7 +28,7 @@ async def upload_document(file: UploadFile = File(...)):
 
     try:
         if filename_lower.endswith(".pdf"):
-            highlights = await extract_pdf_highlights(content)
+            highlights = extract_pdf_highlights(content)
         elif filename_lower.endswith(".docx"):
             highlights = await extract_docx_highlights(content, file.filename)
         else:
