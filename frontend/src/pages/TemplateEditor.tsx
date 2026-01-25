@@ -18,8 +18,17 @@ interface FormData {
 export default function TemplateEditor() {
     const [isUploading, setIsUploading] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
+    const [outputFormat, setOutputFormat] = useState('docx');
     const [error, setError] = useState<string | null>(null);
     const [templateState, setTemplateState] = useState<TemplateState | null>(null);
+    const [customFilename, setCustomFilename] = useState('');
+
+    // Update filename when template loads
+    useEffect(() => {
+        if (templateState) {
+            setCustomFilename(templateState.original_file_path.replace(/\.[^/.]+$/, "") || 'document');
+        }
+    }, [templateState?.original_file_path]);
 
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
@@ -129,7 +138,6 @@ export default function TemplateEditor() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            'application/pdf': ['.pdf'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
         },
         maxFiles: 1,
@@ -148,14 +156,17 @@ export default function TemplateEditor() {
             const blob = await templateApi.generateFinalDocument(
                 templateState.template_file_path,
                 null,
-                data
+                data,
+                outputFormat
             );
 
             // Trigger download
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `filled_${templateState.original_file_path}`;
+            const ext = outputFormat === 'pdf' ? 'pdf' : 'docx';
+            const finalName = customFilename || templateState.original_file_path.replace(/\.[^/.]+$/, "");
+            a.download = `${finalName}.${ext}`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -264,7 +275,7 @@ export default function TemplateEditor() {
                                     Drop your document here
                                 </p>
                                 <p className="text-sm text-slate-400 mt-1">
-                                    or click to browse • PDF and DOCX supported
+                                    Supports Word (.docx)
                                 </p>
                             </div>
                         )}
@@ -321,42 +332,99 @@ export default function TemplateEditor() {
                             ))}
                         </div>
 
-                        {/* Actions */}
-                        <div className="mt-8 pt-6 border-t border-slate-800 flex items-center justify-between">
-                            <button
-                                type="button"
-                                onClick={() => reset()}
-                                disabled={!isDirty}
-                                className="text-sm text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                            >
-                                Clear all
-                            </button>
+                        <div className="mt-8 pt-6 border-t border-slate-800 space-y-6">
+                            {/* Format Selection - Prominent */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                    1. Select Output Format
+                                </label>
+                                <div className="flex bg-slate-800 rounded-xl p-1.5 border border-slate-700 self-start">
+                                    <button
+                                        type="button"
+                                        onClick={() => setOutputFormat('docx')}
+                                        className={`
+                                            px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2
+                                            ${outputFormat === 'docx'
+                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}
+                                        `}
+                                    >
+                                        <span>📝</span>
+                                        Word (.docx)
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={() => setOutputFormat('pdf')}
+                                        className={`
+                                            px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2
+                                            ${outputFormat === 'pdf'
+                                                ? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
+                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}
+                                        `}
+                                    >
+                                        <span>📄</span>
+                                        PDF (.pdf)
+                                    </button>
+                                </div>
+                            </div>
 
-                            <button
-                                type="submit"
-                                disabled={isGenerating}
-                                className={`
-                                    px-6 py-3 rounded-xl font-semibold text-sm
-                                    bg-gradient-to-r from-blue-600 to-indigo-600 text-white
-                                    hover:from-blue-500 hover:to-indigo-500
-                                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
-                                    transition-all duration-150
-                                    disabled:opacity-50 disabled:cursor-not-allowed
-                                    shadow-lg shadow-blue-500/20
-                                `}
-                            >
-                                {isGenerating ? (
-                                    <span className="flex items-center gap-2">
-                                        <span className="animate-spin">⏳</span>
-                                        Generating...
-                                    </span>
-                                ) : (
-                                    <span className="flex items-center gap-2">
-                                        <span>📥</span>
-                                        Generate Document
-                                    </span>
-                                )}
-                            </button>
+                            {/* Filename Input */}
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                    2. Filename (Optional)
+                                </label>
+                                <input
+                                    type="text"
+                                    value={customFilename}
+                                    onChange={(e) => setCustomFilename(e.target.value)}
+                                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    placeholder="e.g. MyContract"
+                                />
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <div className="flex flex-col gap-2 w-full">
+                                    <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                        3. Generate
+                                    </label>
+                                    <div className="flex items-center justify-between gap-4">
+                                        <button
+                                            type="button"
+                                            onClick={() => reset()}
+                                            disabled={!isDirty}
+                                            className="text-sm text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                                        >
+                                            Clear all
+                                        </button>
+
+                                        <button
+                                            type="submit"
+                                            disabled={isGenerating}
+                                            className={`
+                                                px-6 py-4 rounded-xl font-bold text-base
+                                                bg-gradient-to-r from-blue-600 to-indigo-600 text-white
+                                                hover:from-blue-500 hover:to-indigo-500
+                                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
+                                                transition-all duration-150
+                                                disabled:opacity-50 disabled:cursor-not-allowed
+                                                shadow-lg shadow-blue-500/20 flex-grow max-w-sm flex justify-center
+                                            `}
+                                        >
+                                            {isGenerating ? (
+                                                <span className="flex items-center gap-2">
+                                                    <span className="animate-spin">⏳</span>
+                                                    Generating {outputFormat === 'pdf' ? 'PDF' : 'DOCX'}...
+                                                </span>
+                                            ) : (
+                                                <span className="flex items-center gap-2">
+                                                    <span>📥</span>
+                                                    Download {outputFormat === 'pdf' ? 'PDF' : 'Word Doc'}
+                                                </span>
+                                            )}
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </form>
                 </div>

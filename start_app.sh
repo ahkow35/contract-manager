@@ -1,3 +1,4 @@
+
 #!/bin/bash
 
 # Function to kill processes on exit
@@ -12,6 +13,7 @@ echo "Starting Backend on port 8000..."
 cd backend
 python3 -m venv venv 2>/dev/null # Ensure venv exists
 source venv/bin/activate
+pip install -r requirements.txt
 uvicorn app.main:app --reload &
 cd ..
 
@@ -21,6 +23,7 @@ sleep 2
 # 3. Start Frontend
 echo "Starting Frontend on port 5173..."
 cd frontend
+npm install
 npm run dev &
 cd ..
 

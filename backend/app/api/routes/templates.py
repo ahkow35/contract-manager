@@ -1,6 +1,7 @@
 """Template creation and management API endpoints."""
 
 import os
+import io
 from typing import Dict, List, Optional
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, status
 from fastapi.responses import JSONResponse, FileResponse
@@ -24,6 +25,7 @@ class GenerateRequest(BaseModel):
     template_path: Optional[str] = None
     template_id: Optional[int] = None
     field_values: Dict[str, str]
+    output_format: str = "docx"  # "docx" or "pdf"
 
 
 @router.post("/create")
@@ -38,10 +40,10 @@ async def create_template_endpoint(file: UploadFile = File(...)):
     filename_lower = file.filename.lower()
     
     # Validate file type
-    if not (filename_lower.endswith(".docx") or filename_lower.endswith(".pdf")):
+    if not filename_lower.endswith(".docx"):
         raise HTTPException(
             status_code=400,
-            detail="Unsupported file type. Only .docx and .pdf files are supported."
+            detail="Unsupported file type. Only .docx files are supported."
         )
     
     try:
@@ -167,6 +169,8 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
     
     field_values = request.field_values
     
+    print(f"DEBUG: _generate_document called. Format: {request.output_format}", flush=True)
+
     # Validate template exists on disk
     if not os.path.exists(template_path):
         raise HTTPException(status_code=404, detail="Template file not found on server")
@@ -178,47 +182,64 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
             output_filename = get_output_filename(template_path, prefix)
             output_path = os.path.join(os.path.dirname(template_path), output_filename)
             
+            
             # Generate document with the service
-            generate_docx(template_path, field_values, output_path)
-            media_type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+            # If docx, we save to output_path. If pdf, we need intermediate bytes.
             
-        elif template_path.lower().endswith(".pdf"):
-            from app.services.document_generator import generate_pdf
-            
-            # Generate output path
-            prefix = "preview_" if is_preview else "filled_"
-            output_filename = get_output_filename(template_path, prefix)
-            output_path = os.path.join(os.path.dirname(template_path), output_filename)
-            
-            print(f"DEBUG: Generating PDF from {template_path}")
-            print(f"DEBUG: Field Keys: {list(field_values.keys())}")
-            
-            try:
-                generate_pdf(template_path, field_values, output_path)
-            except Exception as inner_e:
-                print(f"ERROR in generate_pdf: {inner_e}")
-                import traceback
-                traceback.print_exc()
-                raise inner_e
+            if request.output_format.lower() == "pdf":
+                # 1. Generate filled DOCX in memory
+                docx_bytes = generate_docx(template_path, field_values, output_path=None)
+                docx_stream = io.BytesIO(docx_bytes)
                 
-            media_type = "application/pdf"
-
+                # 2. Convert to PDF using Adobe
+                from app.services.pdf_converter import AdobeConverter
+                
+                print(f"DEBUG: Converting to PDF using Adobe Services")
+                pdf_stream = AdobeConverter.convert_docx_to_pdf(docx_stream)
+                
+                # 3. Save PDF to output path
+                # Change extension to .pdf
+                pdf_filename = output_filename.rsplit('.', 1)[0] + ".pdf"
+                pdf_path = os.path.join(os.path.dirname(output_path), pdf_filename)
+                
+                with open(pdf_path, "wb") as f:
+                    f.write(pdf_stream.getbuffer())
+                
+                # Return PDF
+                return FileResponse(
+                    path=pdf_path,
+                    filename=pdf_filename,
+                    media_type="application/pdf",
+                    headers={
+                        "Content-Disposition": f"attachment; filename={pdf_filename}",
+                        "Content-Type": "application/pdf"
+                    }
+                )
+                
+            else:
+                # Default DOCX
+                generate_docx(template_path, field_values, output_path)
+                
+                return FileResponse(
+                    path=output_path,
+                    filename=output_filename,
+                    media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    headers={
+                        "Content-Disposition": f"attachment; filename={output_filename}"
+                    }
+                )
+            
         else:
             raise HTTPException(status_code=400, detail="Unsupported file type")
         
-        # Return the generated file
-        return FileResponse(
-            path=output_path,
-            filename=output_filename,
-            media_type=media_type,
-            headers={
-                "Content-Disposition": f"attachment; filename={output_filename}"
-            }
-        )
+        # Unreachable code technically, but for safety
+        # return ...
         
     except HTTPException:
         raise
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(
             status_code=500,
             detail=f"Failed to generate document: {str(e)}"

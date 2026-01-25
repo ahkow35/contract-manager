@@ -22,7 +22,7 @@ interface DynamicFormGeneratorProps {
     fields: DetectedField[];
     templateId: string;
     onPreview: (data: FormData) => Promise<void>;
-    onGenerate: (data: FormData) => Promise<void>;
+    onGenerate: (data: FormData, format: string, customFilename?: string) => Promise<void>;
     className?: string;
 }
 
@@ -39,6 +39,8 @@ export default function DynamicFormGenerator({
 }: DynamicFormGeneratorProps) {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [previewMode, setPreviewMode] = useState(false);
+    const [outputFormat, setOutputFormat] = useState('docx');
+    const [customFilename, setCustomFilename] = useState(templateId.replace(/\.[^/.]+$/, "") || 'document');
 
     const {
         register,
@@ -68,7 +70,8 @@ export default function DynamicFormGenerator({
     const handleGenerate: SubmitHandler<FormData> = async (data) => {
         setIsSubmitting(true);
         try {
-            await onGenerate(data);
+            console.log("DEBUG: Generating with format:", outputFormat);
+            await onGenerate(data, outputFormat, customFilename);
         } finally {
             setIsSubmitting(false);
         }
@@ -271,10 +274,49 @@ export default function DynamicFormGenerator({
                             ) : (
                                 <>
                                     <span>📥</span>
-                                    Generate Document
+                                    Generate {outputFormat === 'pdf' ? 'PDF' : 'Word'} Document
                                 </>
                             )}
                         </button>
+
+                        <div className="w-full sm:w-auto">
+                            <label className="block text-xs text-slate-400 mb-1 ml-1">Filename</label>
+                            <input
+                                type="text"
+                                value={customFilename}
+                                onChange={(e) => setCustomFilename(e.target.value)}
+                                className="w-full sm:w-64 px-4 py-2 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                placeholder="Filename"
+                            />
+                        </div>
+
+                        {/* Format Selection - Replaced dropdown with distinct buttons */}
+                        <div className="flex bg-slate-800 rounded-xl p-1 border border-slate-700">
+                            <button
+                                type="button"
+                                onClick={() => setOutputFormat('docx')}
+                                className={clsx(
+                                    'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+                                    outputFormat === 'docx'
+                                        ? 'bg-blue-600 text-white shadow-lg'
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                                )}
+                            >
+                                Word (.docx)
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setOutputFormat('pdf')}
+                                className={clsx(
+                                    'px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200',
+                                    outputFormat === 'pdf'
+                                        ? 'bg-red-600 text-white shadow-lg'
+                                        : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'
+                                )}
+                            >
+                                PDF (.pdf)
+                            </button>
+                        </div>
                     </div>
                 )}
 

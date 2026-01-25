@@ -13,6 +13,21 @@ function FileUploader() {
         const file = acceptedFiles[0];
         if (!file) return;
 
+        // Validation for file type
+        const isPdf = file.name.toLowerCase().endsWith('.pdf') || file.type === 'application/pdf';
+
+        if (isPdf) {
+            setError("For best results, please upload a Word (.docx) file. We will convert it to PDF for you on export.");
+            return;
+        }
+
+        const isDocx = file.name.toLowerCase().endsWith('.docx') || file.type === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+
+        if (!isDocx) {
+            setError("Please upload a supported Word (.docx) file");
+            return;
+        }
+
         setIsUploading(true);
         setError(null);
 
@@ -32,7 +47,6 @@ function FileUploader() {
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
         accept: {
-            'application/pdf': ['.pdf'],
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document': ['.docx'],
         },
         maxFiles: 1,
@@ -56,20 +70,35 @@ function FileUploader() {
         }
     };
 
-    const handleGenerate = async (data: Record<string, string>) => {
+    const handleGenerate = async (data: Record<string, string>, format: string, customFilename?: string) => {
         if (!templateState) return;
 
         try {
             const blob = await templateApi.generateFinalDocument(
                 templateState.template_file_path,
                 null,
-                data
+                data,
+                format
             );
             // Download the generated file
+            console.log("DEBUG: Generated Blob Type:", blob.type, "Format requested:", format);
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `filled_${templateState.original_file_path}`;
+
+            // FOOLPROOF LOGIC:
+            // If the user ASKED for a PDF, OR the server SENT a PDF, it IS a PDF.
+            const isPdf = format === 'pdf' || blob.type === 'application/pdf';
+            const ext = isPdf ? 'pdf' : 'docx';
+
+            console.log("DEBUG: Forced extension:", ext);
+
+            // Ensure we strip the old extension correctly
+            // Use custom filename if provided, otherwise use original base name
+            const finalName = customFilename || templateState.original_file_path.replace(/\.[^/.]+$/, "");
+            a.download = `${finalName}.${ext}`;
+
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -104,7 +133,7 @@ function FileUploader() {
                             <>
                                 <p className="dropzone-title">Drag & drop your document here</p>
                                 <p className="dropzone-subtitle">or click to select a file</p>
-                                <p className="dropzone-hint">Supports PDF and DOCX files with yellow highlights</p>
+                                <p className="dropzone-hint">Supports Word (.docx) files with yellow highlights</p>
                             </>
                         )}
                     </div>
