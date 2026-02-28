@@ -39,7 +39,7 @@ export default function FieldRow({
             case 'phone': return 'tel';
             case 'number':
             case 'currency': return 'text';  // Use text for free-form input without spinners
-            case 'date': return 'date';
+            case 'date': return 'text';
             default: return 'text';
         }
     };

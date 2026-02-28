@@ -145,15 +145,17 @@ async def generate_document(
     Generate the final document with field values replaced.
     Enforces daily usage limits for free tier users.
     """
-    return await _generate_document(request, db, is_preview=False)
+    return await _generate_document(request, db, is_preview=False, current_user=current_user)
 
 
-async def _generate_document(request: GenerateRequest, db: Session, is_preview: bool):
+async def _generate_document(request: GenerateRequest, db: Session, is_preview: bool, current_user: User = None):
     """
     Internal function to generate a document with placeholders replaced.
     Resolves template_path from ID if provided.
+    Adds watermark for free-tier users.
     """
     from app.services.document_generator import generate_docx, get_output_filename
+    from app.services.watermark import add_watermark
     
     template_path = request.template_path
 
@@ -186,9 +188,23 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
             # Generate document with the service
             # If docx, we save to output_path. If pdf, we need intermediate bytes.
             
+            # Determine if watermark should be applied (free-tier users)
+            should_watermark = current_user is None or not current_user.is_paid
+
             if request.output_format.lower() == "pdf":
                 # 1. Generate filled DOCX in memory
                 docx_bytes = generate_docx(template_path, field_values, output_path=None)
+                
+                # 1b. Add watermark for free-tier users
+                if should_watermark:
+                    from docx import Document as DocxDocument
+                    doc = DocxDocument(io.BytesIO(docx_bytes))
+                    add_watermark(doc)
+                    buf = io.BytesIO()
+                    doc.save(buf)
+                    buf.seek(0)
+                    docx_bytes = buf.getvalue()
+                
                 docx_stream = io.BytesIO(docx_bytes)
                 
                 # 2. Convert to PDF using Adobe
@@ -218,7 +234,15 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
                 
             else:
                 # Default DOCX
-                generate_docx(template_path, field_values, output_path)
+                if should_watermark:
+                    # Generate in memory, add watermark, then save
+                    from docx import Document as DocxDocument
+                    docx_bytes = generate_docx(template_path, field_values, output_path=None)
+                    doc = DocxDocument(io.BytesIO(docx_bytes))
+                    add_watermark(doc)
+                    doc.save(output_path)
+                else:
+                    generate_docx(template_path, field_values, output_path)
                 
                 return FileResponse(
                     path=output_path,

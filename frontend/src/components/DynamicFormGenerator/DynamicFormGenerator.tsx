@@ -87,7 +87,7 @@ export default function DynamicFormGenerator({
             case 'currency':
                 return 'number';
             case 'date':
-                return 'date';
+                return 'text';
             default:
                 return 'text';
         }
