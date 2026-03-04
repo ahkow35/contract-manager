@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, Boolean, JSON, DateTime, Date, ForeignKey
+from sqlalchemy import Column, Integer, String, Boolean, JSON, DateTime, Date, ForeignKey, UniqueConstraint
 from sqlalchemy.orm import relationship
 from datetime import datetime, date
 from app.db.database import Base
@@ -52,3 +52,17 @@ class UsageEvent(Base):
     ip_address = Column(String, nullable=True)
     user_agent = Column(String, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, index=True)
+
+
+class TemplateDraft(Base):
+    """Auto-saved form field drafts per user + template."""
+    __tablename__ = "template_drafts"
+    __table_args__ = (
+        UniqueConstraint("user_id", "template_id", name="uq_user_template_draft"),
+    )
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), index=True)
+    template_id = Column(String, index=True)  # template_file_path string
+    field_data = Column(JSON)  # {"field_1": "John", "field_2": "2026-03-01"}
+    updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)

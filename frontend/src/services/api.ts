@@ -335,4 +335,24 @@ export const analyticsApi = {
     },
 };
 
+export const draftsApi = {
+    async getDraft(templateId: string): Promise<Record<string, string> | null> {
+        try {
+            const response = await api.get(`/drafts/${encodeURIComponent(templateId)}`);
+            if (!response.data) return null;
+            return response.data.field_data || null;
+        } catch {
+            return null;
+        }
+    },
+
+    async saveDraft(templateId: string, fieldData: Record<string, string>): Promise<void> {
+        await api.post(`/drafts/${encodeURIComponent(templateId)}`, { field_data: fieldData });
+    },
+
+    async deleteDraft(templateId: string): Promise<void> {
+        await api.delete(`/drafts/${encodeURIComponent(templateId)}`);
+    },
+};
+
 export default api;
