@@ -2,11 +2,11 @@
  * TemplateEditor Page
  */
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useForm } from 'react-hook-form';
 import { useDropzone } from 'react-dropzone';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { templateApi, TemplateState } from '../services/api';
+import { templateApi, draftsApi, TemplateState } from '../services/api';
 import { FieldRow } from '../components/FieldRow';
 import { useAuth } from '../context/AuthContext';
 import InstructionsEmptyState from '../components/InstructionsEmptyState';
@@ -16,6 +16,8 @@ interface FormData {
     [key: string]: string;
 }
 
+type SaveStatus = 'idle' | 'saving' | 'saved';
+
 export default function TemplateEditor() {
     const [isUploading, setIsUploading] = useState(false);
     const [isGenerating, setIsGenerating] = useState(false);
@@ -23,6 +25,13 @@ export default function TemplateEditor() {
     const [error, setError] = useState<string | null>(null);
     const [templateState, setTemplateState] = useState<TemplateState | null>(null);
     const [customFilename, setCustomFilename] = useState('');
+    const [saveStatus, setSaveStatus] = useState<SaveStatus>('idle');
+    const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+    // Refs for debounce control
+    const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const savedFadeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const draftLoadedRef = useRef(false); // Prevent auto-save from firing during hydration
 
     // Update filename when template loads
     useEffect(() => {
@@ -34,6 +43,75 @@ export default function TemplateEditor() {
     const { user, isAuthenticated } = useAuth();
     const navigate = useNavigate();
     const location = useLocation();
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors, isDirty },
+        reset,
+        watch,
+        getValues,
+    } = useForm<FormData>();
+
+    // --- Draft hydration on template load ---
+    useEffect(() => {
+        if (!templateState || !isAuthenticated) return;
+        const templateId = templateState.template_file_path;
+
+        const loadDraft = async () => {
+            try {
+                const draftData = await draftsApi.getDraft(templateId);
+                if (draftData && Object.values(draftData).some(v => v)) {
+                    // Hydrate form with draft values
+                    reset(draftData);
+                }
+            } catch (e) {
+                console.error('[TemplateEditor] Failed to load draft:', e);
+            } finally {
+                // Allow auto-save after a short delay to avoid saving the hydration itself
+                setTimeout(() => { draftLoadedRef.current = true; }, 500);
+            }
+        };
+        draftLoadedRef.current = false;
+        loadDraft();
+    }, [templateState?.template_file_path, isAuthenticated]);
+
+    // --- Debounced auto-save ---
+    useEffect(() => {
+        if (!templateState || !isAuthenticated) return;
+
+        const subscription = watch((values) => {
+            // Don't save during initial hydration
+            if (!draftLoadedRef.current) return;
+
+            // Clear previous timers
+            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+            if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current);
+
+            setSaveStatus('saving');
+
+            debounceTimerRef.current = setTimeout(async () => {
+                try {
+                    await draftsApi.saveDraft(
+                        templateState.template_file_path,
+                        values as Record<string, string>
+                    );
+                    setSaveStatus('saved');
+                    // Fade out after 2s
+                    savedFadeTimerRef.current = setTimeout(() => setSaveStatus('idle'), 2000);
+                } catch (e) {
+                    console.error('[TemplateEditor] Auto-save failed:', e);
+                    setSaveStatus('idle');
+                }
+            }, 1500);
+        });
+
+        return () => {
+            subscription.unsubscribe();
+            if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+            if (savedFadeTimerRef.current) clearTimeout(savedFadeTimerRef.current);
+        };
+    }, [templateState?.template_file_path, isAuthenticated, watch]);
 
     // Load template from URL ID
     useEffect(() => {
@@ -107,13 +185,6 @@ export default function TemplateEditor() {
         };
         loadTemplate();
     }, [location.search, isAuthenticated]);
-
-    const {
-        register,
-        handleSubmit,
-        formState: { errors, isDirty },
-        reset,
-    } = useForm<FormData>();
 
     // File upload handler
     const onDrop = useCallback(async (acceptedFiles: File[]) => {
@@ -209,11 +280,32 @@ export default function TemplateEditor() {
         }
     };
 
+    // Clear Form — reset fields + delete draft
+    const handleClearForm = async () => {
+        reset();
+        draftLoadedRef.current = false;
+        setSaveStatus('idle');
+        if (debounceTimerRef.current) clearTimeout(debounceTimerRef.current);
+
+        if (templateState && isAuthenticated) {
+            try {
+                await draftsApi.deleteDraft(templateState.template_file_path);
+            } catch (e) {
+                console.error('[TemplateEditor] Failed to delete draft:', e);
+            }
+        }
+        setShowClearConfirm(false);
+        // Re-enable auto-save after a short delay
+        setTimeout(() => { draftLoadedRef.current = true; }, 500);
+    };
+
     // Reset to upload new file
     const handleNewFile = () => {
         setTemplateState(null);
         setError(null);
         reset();
+        draftLoadedRef.current = false;
+        setSaveStatus('idle');
     };
 
     return (
@@ -319,7 +411,56 @@ export default function TemplateEditor() {
                                 </button>
                             </div>
                         </div>
+
+                        {/* Save Status Indicator + Clear Form */}
+                        <div className="flex items-center justify-between mt-3">
+                            {/* Auto-save status */}
+                            <div className="h-5">
+                                {saveStatus === 'saving' && (
+                                    <span className="text-xs text-slate-500 flex items-center gap-1.5 animate-pulse">
+                                        <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+                                        Saving…
+                                    </span>
+                                )}
+                                {saveStatus === 'saved' && (
+                                    <span className="text-xs text-emerald-400 flex items-center gap-1.5 transition-opacity duration-500">
+                                        <span>✓</span>
+                                        Saved
+                                    </span>
+                                )}
+                            </div>
+
+                            {/* Clear Form */}
+                            <button
+                                type="button"
+                                onClick={() => setShowClearConfirm(true)}
+                                className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                            >
+                                Clear Form
+                            </button>
+                        </div>
                     </div>
+
+                    {/* Clear Confirmation Banner */}
+                    {showClearConfirm && (
+                        <div className="px-8 py-3 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
+                            <p className="text-sm text-red-300">Clear all fields? This cannot be undone.</p>
+                            <div className="flex items-center gap-3">
+                                <button
+                                    onClick={() => setShowClearConfirm(false)}
+                                    className="text-xs text-slate-400 hover:text-white transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleClearForm}
+                                    className="text-xs font-semibold text-red-400 hover:text-red-300 transition-colors"
+                                >
+                                    Yes, clear
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     {/* Form Fields */}
                     <form onSubmit={handleSubmit(handleGenerate)} className="px-8 py-6">
@@ -393,16 +534,7 @@ export default function TemplateEditor() {
                                     <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
                                         3. Generate
                                     </label>
-                                    <div className="flex items-center justify-between gap-4">
-                                        <button
-                                            type="button"
-                                            onClick={() => reset()}
-                                            disabled={!isDirty}
-                                            className="text-sm text-slate-400 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                                        >
-                                            Clear all
-                                        </button>
-
+                                    <div className="flex items-center justify-end gap-4">
                                         <button
                                             type="submit"
                                             disabled={isGenerating}
