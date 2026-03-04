@@ -47,10 +47,9 @@ export default function TemplateEditor() {
     const {
         register,
         handleSubmit,
-        formState: { errors, isDirty },
+        formState: { errors },
         reset,
         watch,
-        getValues,
     } = useForm<FormData>();
 
     // --- Draft hydration on template load ---
