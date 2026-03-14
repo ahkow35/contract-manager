@@ -11,6 +11,7 @@ Processes DOCX and PDF files to:
 import os
 import uuid
 import json
+import logging
 from io import BytesIO
 from typing import List, Dict, Any, Tuple, Optional
 from dataclasses import dataclass, asdict
@@ -20,6 +21,8 @@ from enum import Enum
 from docx import Document
 from docx.shared import RGBColor
 from docx.enum.text import WD_COLOR_INDEX
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -84,30 +87,30 @@ def process_docx_template(
         TemplateState containing template path and detected fields
     """
     # Load document from bytes
-    print(f"DEBUG: Loading DOCX document (size: {len(file_content)} bytes)")
+    logger.debug("Loading DOCX document (size: %s bytes)", len(file_content))
     try:
         doc = Document(BytesIO(file_content))
     except Exception as e:
-        print(f"DEBUG: Failed to load DOCX: {e}")
+        logger.debug("Failed to load DOCX: %s", e)
         raise ValueError(f"Invalid DOCX file: {e}")
-    
-    print("DEBUG: DOCX loaded successfully")
+
+    logger.debug("DOCX loaded successfully")
     fields: List[DetectedField] = []
     field_counter = 1
     
     # Iterate through all paragraphs
-    print(f"DEBUG: Processing {len(doc.paragraphs)} paragraphs")
+    logger.debug("Processing %s paragraphs", len(doc.paragraphs))
     for para_idx, paragraph in enumerate(doc.paragraphs):
         try:
             field_counter = _process_paragraph_runs(
                 paragraph, para_idx, fields, field_counter
             )
         except Exception as e:
-            print(f"DEBUG: Error processing paragraph {para_idx}: {e}")
+            logger.debug("Error processing paragraph %s: %s", para_idx, e)
             raise
     
     # Also process tables
-    print(f"DEBUG: Processing {len(doc.tables)} tables")
+    logger.debug("Processing %s tables", len(doc.tables))
     for table in doc.tables:
         for row in table.rows:
             for cell in row.cells:
@@ -126,14 +129,14 @@ def process_docx_template(
     os.makedirs(output_dir, exist_ok=True)
     
     # Save the template document
-    print(f"DEBUG: Saving template to {template_path}")
+    logger.debug("Saving template to %s", template_path)
     try:
         doc.save(template_path)
     except Exception as e:
-        print(f"DEBUG: Failed to save template: {e}")
+        logger.debug("Failed to save template: %s", e)
         raise
-    
-    print(f"DEBUG: Template saved. Detected {len(fields)} fields.")
+
+    logger.debug("Template saved. Detected %s fields.", len(fields))
     
     return TemplateState(
         template_file_path=template_path,

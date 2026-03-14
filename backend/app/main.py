@@ -10,6 +10,9 @@ from fastapi.responses import FileResponse
 from app.api.routes import documents, health, templates, auth, admin, analytics, drafts
 from app.db.database import engine, Base
 from app.config import settings
+from app.logging_config import configure_logging
+
+configure_logging(debug=settings.debug)
 
 # Create tables
 Base.metadata.create_all(bind=engine)
