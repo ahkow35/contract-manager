@@ -1,4 +1,5 @@
 import hashlib
+import logging
 import secrets
 from datetime import datetime, timedelta
 from typing import Annotated
@@ -16,6 +17,7 @@ from app.services.usage_tracker import track_event
 from app.services.email_service import send_password_reset_email
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Password hashing
 pwd_context = CryptContext(schemes=["argon2"], deprecated="auto")
@@ -88,6 +90,8 @@ def upgrade_user(db: Session = Depends(get_db), current_user: User = Depends(get
     return current_user
 @router.post("/forgot-password")
 async def forgot_password(request: PasswordResetRequest, db: Session = Depends(get_db)):
+    # NOTE: async def is required for awaiting send_password_reset_email.
+    # Sync SQLAlchemy operations below will block the event loop — acceptable for low traffic.
     user = db.query(User).filter(User.email == request.email).first()
     # Always return 200 to prevent email enumeration
     if not user:
@@ -113,8 +117,12 @@ async def forgot_password(request: PasswordResetRequest, db: Session = Depends(g
     db.add(reset_token_record)
     db.commit()
 
-    # Send email (async)
-    await send_password_reset_email(user.email, raw_token)
+    # Send email — catch failures to avoid leaking enumeration info
+    # (token will be invalidated on the next reset request if not used)
+    try:
+        await send_password_reset_email(user.email, raw_token)
+    except Exception as e:
+        logger.error("Failed to send password reset email to %s: %s", user.email, e, exc_info=True)
 
     return {"message": "If that email exists, a reset link has been sent."}
 

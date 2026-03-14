@@ -75,7 +75,7 @@ class PasswordResetToken(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("users.id"), index=True)
-    token_hash = Column(String, unique=True, index=True)  # SHA-256 of the raw token
+    token_hash = Column(String, unique=True, index=True, nullable=False)  # SHA-256 of the raw token
     expires_at = Column(DateTime)
-    used = Column(Boolean, default=False)
+    used = Column(Boolean, default=False, nullable=False)
     created_at = Column(DateTime, default=datetime.utcnow)
