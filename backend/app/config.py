@@ -29,6 +29,9 @@ class Settings(BaseSettings):
     # File retention (hours)
     file_retention_hours: int = 24
 
+    # CORS
+    allowed_origins: str = "http://localhost:5173"
+
     # Adobe PDF Services
     adobe_client_id: str = ""
     adobe_client_secret: str = ""

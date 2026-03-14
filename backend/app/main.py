@@ -9,6 +9,7 @@ from fastapi.responses import FileResponse
 
 from app.api.routes import documents, health, templates, auth, admin, analytics, drafts
 from app.db.database import engine, Base
+from app.config import settings
 
 # Create tables
 Base.metadata.create_all(bind=engine)
@@ -22,7 +23,7 @@ app = FastAPI(
 # CORS configuration - allow multiple origins for development
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Allow all origins for development
+    allow_origins=[o.strip() for o in settings.allowed_origins.split(",")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
