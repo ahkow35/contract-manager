@@ -82,12 +82,6 @@ export interface User {
     usage_count: number;
 }
 
-export interface AuthResponse {
-    access_token: string;
-    token_type: string;
-    user?: User; // Optional if not returned by login directly, but we might want to fetch it
-}
-
 export interface Template {
     id: number;
     name: string;
@@ -128,7 +122,7 @@ export const authApi = {
         return response.data;
     },
 
-    async forgotPassword(email: string): Promise<{ message: string; reset_token: string }> {
+    async forgotPassword(email: string): Promise<{ message: string }> {
         const response = await api.post('/auth/forgot-password', { email });
         return response.data;
     },

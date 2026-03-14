@@ -10,7 +10,7 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt
 from app.db.database import get_db
 from app.models.sql import User, PasswordResetToken
-from app.models.schemas import UserCreate, UserResponse, Token, PasswordResetRequest, PasswordResetConfirm
+from app.models.schemas import UserCreate, UserResponse, PasswordResetRequest, PasswordResetConfirm
 from app.config import settings
 from app.api.deps import get_current_user
 from app.services.usage_tracker import track_event
@@ -59,7 +59,7 @@ def signup(user: UserCreate, db: Session = Depends(get_db)):
     track_event(db, "signup", user_id=new_user.id)
     return new_user
 
-@router.post("/login", response_model=Token)
+@router.post("/login")
 def login(
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     response: Response,
@@ -90,12 +90,16 @@ def login(
     )
 
     track_event(db, "login", user_id=user.id)
-    # Still return token in response body for backward compatibility
-    return {"access_token": access_token, "token_type": "bearer"}
+    return {"token_type": "bearer"}
 
 @router.post("/logout")
 def logout(response: Response):
-    response.delete_cookie(key="access_token")
+    response.delete_cookie(
+        key="access_token",
+        httponly=True,
+        secure=not settings.debug,
+        samesite="lax",
+    )
     return {"message": "Logged out"}
 
 @router.get("/me", response_model=UserResponse)

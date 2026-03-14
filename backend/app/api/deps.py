@@ -1,6 +1,5 @@
 from typing import Annotated
 from fastapi import Cookie, Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.orm import Session
 from app.config import settings
@@ -9,8 +8,6 @@ from app.models.sql import User
 from app.models.schemas import TokenData
 from app.services.usage_tracker import track_event
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")
-oauth2_scheme_optional = OAuth2PasswordBearer(tokenUrl="auth/login", auto_error=False)
 
 def get_settings():
     return settings
@@ -68,9 +65,8 @@ FREE_TIER_TEMPLATE_LIMIT = 1  # Max templates free users can save
 
 
 async def check_usage_limit(
-    token: Annotated[str | None, Depends(oauth2_scheme_optional)],
     db: Session = Depends(get_db),
-    request: "Request" = None  # Will be injected from the route
+    access_token: str | None = Cookie(default=None),
 ):
     """
     Check and enforce usage limits for document generation.
@@ -79,18 +75,17 @@ async def check_usage_limit(
     - Free users: FREE_TIER_DAILY_LIMIT per day
     """
     from datetime import date
-    from fastapi import Request
     from app.models.sql import IPUsage
     
     today = date.today()
     
     # If no token provided, track by IP address
-    if token is None:
+    if access_token is None:
         return None  # For now, allow unauthenticated - IP tracking needs Request object
-    
+
     # Try to get user from token
     try:
-        payload = jwt.decode(token, settings.secret_key, algorithms=[settings.algorithm])
+        payload = jwt.decode(access_token, settings.secret_key, algorithms=[settings.algorithm])
         email: str = payload.get("sub")
         if email is None:
             return None  # Invalid token, allow as unauthenticated

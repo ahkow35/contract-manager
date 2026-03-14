@@ -5,7 +5,6 @@ import { authApi } from '../services/api';
 const ForgotPasswordPage: React.FC = () => {
     const [email, setEmail] = useState('');
     const [message, setMessage] = useState('');
-    const [mockToken, setMockToken] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
@@ -13,13 +12,11 @@ const ForgotPasswordPage: React.FC = () => {
         e.preventDefault();
         setError('');
         setMessage('');
-        setMockToken('');
         setLoading(true);
 
         try {
-            const response = await authApi.forgotPassword(email);
-            setMessage("Reset link generated! (See below)");
-            setMockToken(response.reset_token);
+            await authApi.forgotPassword(email);
+            setMessage("If that email exists, a reset link has been sent.");
         } catch (err: any) {
             setError(err.response?.data?.detail || "Failed to request reset link");
         } finally {
@@ -71,16 +68,6 @@ const ForgotPasswordPage: React.FC = () => {
                         </button>
                     </div>
                 </form>
-
-                {/* Mock Token Display */}
-                {mockToken && (
-                    <div className="mt-4 p-4 bg-yellow-50 border border-yellow-200 rounded text-sm text-yellow-800 break-all">
-                        <p className="font-bold mb-2">DEV MODE: Click this link to reset:</p>
-                        <Link to={`/reset-password?token=${mockToken}`} className="text-blue-600 underline">
-                            Reset Password Link
-                        </Link>
-                    </div>
-                )}
 
                 <div className="text-center">
                     <Link to="/auth" className="text-sm text-blue-600 hover:text-blue-500">
