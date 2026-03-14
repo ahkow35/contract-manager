@@ -2,6 +2,7 @@
 
 import os
 import io
+import logging
 from typing import Dict, List, Optional
 from fastapi import APIRouter, File, UploadFile, HTTPException, Depends, status
 from fastapi.responses import JSONResponse, FileResponse
@@ -16,6 +17,7 @@ from app.models.schemas import TemplateSaveRequest, TemplateResponse
 from app.services.usage_tracker import track_event
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 # Default output directory for templates
 TEMPLATES_DIR = os.path.join(os.path.dirname(__file__), "..", "..", "templates")
@@ -191,7 +193,7 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
     
     field_values = request.field_values
     
-    print(f"DEBUG: _generate_document called. Format: {request.output_format}", flush=True)
+    logger.debug("_generate_document called. Format: %s", request.output_format)
 
     # Validate template exists on disk
     if not os.path.exists(template_path):
@@ -230,7 +232,7 @@ async def _generate_document(request: GenerateRequest, db: Session, is_preview: 
                 # 2. Convert to PDF using Adobe
                 from app.services.pdf_converter import AdobeConverter
                 
-                print(f"DEBUG: Converting to PDF using Adobe Services")
+                logger.debug("Converting to PDF using Adobe Services")
                 pdf_stream = AdobeConverter.convert_docx_to_pdf(docx_stream)
                 
                 # 3. Save PDF to output path

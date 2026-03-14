@@ -1,6 +1,6 @@
 """Pydantic schemas for API requests and responses."""
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Dict, Optional, Any
 
 
@@ -46,7 +46,7 @@ class UserBase(BaseModel):
     email: str
 
 class UserCreate(UserBase):
-    password: str
+    password: str = Field(min_length=8)
     invite_code: str  # Required for beta signup
 
 class UserLogin(UserBase):
@@ -74,7 +74,7 @@ class PasswordResetRequest(BaseModel):
 
 class PasswordResetConfirm(BaseModel):
     token: str
-    new_password: str
+    new_password: str = Field(min_length=8)
 
 
 # --- Template Schemas ---

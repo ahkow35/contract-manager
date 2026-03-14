@@ -1,5 +1,8 @@
 """Application configuration."""
 
+import logging as _logging
+import warnings
+from pydantic import model_validator
 from pydantic_settings import BaseSettings
 
 
@@ -12,7 +15,7 @@ class Settings(BaseSettings):
     debug: bool = False
 
     # Beta Access
-    beta_invite_code: str = "I-LOVE-NYAN-CAT"
+    beta_invite_code: str = ""
 
     # Security
     secret_key: str = "change-me-in-production"
@@ -46,6 +49,16 @@ class Settings(BaseSettings):
     smtp_password: str = ""
     smtp_from_email: str = ""
     app_base_url: str = "http://localhost:5173"
+
+    @model_validator(mode="after")
+    def warn_insecure_defaults(self) -> "Settings":
+        """Warn if security-sensitive settings still have insecure defaults."""
+        if self.secret_key == "change-me-in-production":
+            _logging.getLogger(__name__).critical(
+                "SECRET_KEY is set to the default insecure value. "
+                "Set a strong random SECRET_KEY environment variable before deploying to production."
+            )
+        return self
 
     class Config:
         # Load .env from project root (../../.env relative to this file)

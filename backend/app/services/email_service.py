@@ -13,9 +13,8 @@ async def send_password_reset_email(to_email: str, reset_token: str) -> None:
     """Send a password reset email with the reset link."""
     if not settings.smtp_username:
         logger.warning(
-            "SMTP not configured — password reset token for %s: %s",
+            "SMTP not configured — reset token generated for %s but not sent (configure SMTP to send emails)",
             to_email,
-            reset_token,
         )
         return
 
