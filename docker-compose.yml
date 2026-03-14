@@ -22,6 +22,13 @@ services:
       - BETA_INVITE_CODE=${BETA_INVITE_CODE:-I-LOVE-NYAN-CAT}
       - ADOBE_CLIENT_ID=${ADOBE_CLIENT_ID}
       - ADOBE_CLIENT_SECRET=${ADOBE_CLIENT_SECRET}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-https://highlight-edit.nyan.sg}
+      - APP_BASE_URL=${APP_BASE_URL:-https://highlight-edit.nyan.sg}
+      - SMTP_HOST=${SMTP_HOST:-smtp.gmail.com}
+      - SMTP_PORT=${SMTP_PORT:-587}
+      - SMTP_USERNAME=${SMTP_USERNAME}
+      - SMTP_PASSWORD=${SMTP_PASSWORD}
+      - SMTP_FROM_EMAIL=${SMTP_FROM_EMAIL}
     volumes:
       - /mnt/data/yk_highlight-edit/data:/data
     restart: unless-stopped

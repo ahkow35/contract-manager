@@ -27,6 +27,18 @@ os.makedirs(os.path.dirname(os.path.abspath(_db_path)), exist_ok=True)
 _alembic_ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
 _alembic_cfg = AlembicConfig(_alembic_ini)
 try:
+    # Detect existing databases created before Alembic was introduced.
+    # If the users table exists but alembic_version does not, the DB was
+    # bootstrapped with Base.metadata.create_all().  Stamp it at the
+    # initial_schema revision so Alembic skips table creation and only
+    # applies the subsequent migrations (is_admin, password_reset_tokens).
+    import sqlite3 as _sqlite3
+    _conn = _sqlite3.connect(_db_path)
+    _tables = {r[0] for r in _conn.execute("SELECT name FROM sqlite_master WHERE type='table'").fetchall()}
+    _conn.close()
+    if "users" in _tables and "alembic_version" not in _tables:
+        _logger.info("Existing pre-Alembic database detected — stamping initial_schema revision")
+        alembic_command.stamp(_alembic_cfg, "a274d593a41a")
     alembic_command.upgrade(_alembic_cfg, "head")
     _logger.info("Database migrations completed successfully")
 except Exception as _e:
