@@ -1,7 +1,10 @@
 """FastAPI application entry point."""
 
+import logging
 import os
 from pathlib import Path
+from alembic.config import Config as AlembicConfig
+from alembic import command as alembic_command
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -14,13 +17,21 @@ from app.logging_config import configure_logging
 configure_logging(debug=settings.debug)
 
 # Run database migrations on startup
-import os as _os
-from alembic.config import Config as _AlembicConfig
-from alembic import command as _alembic_command
+_logger = logging.getLogger(__name__)
 
-_alembic_ini = _os.path.join(_os.path.dirname(__file__), "..", "alembic.ini")
-_alembic_cfg = _AlembicConfig(_alembic_ini)
-_alembic_command.upgrade(_alembic_cfg, "head")
+# Ensure data directory exists
+_db_path = os.environ.get("DATABASE_PATH", "./data/sql_app.db")
+os.makedirs(os.path.dirname(os.path.abspath(_db_path)), exist_ok=True)
+
+# Run migrations with error handling
+_alembic_ini = os.path.join(os.path.dirname(__file__), "..", "alembic.ini")
+_alembic_cfg = AlembicConfig(_alembic_ini)
+try:
+    alembic_command.upgrade(_alembic_cfg, "head")
+    _logger.info("Database migrations completed successfully")
+except Exception as _e:
+    _logger.error("Failed to run database migrations: %s", _e, exc_info=True)
+    raise
 
 app = FastAPI(
     title="Highlight Edit API",
