@@ -22,11 +22,6 @@ except ImportError as e:
 
 from app.config import settings
 
-logger = logging.getLogger(__name__)
-
-# Remove duplicate logger declaration
-# (The one at the top of file after imports is now the only one)
-
 class AdobeConverter:
     """Service to handle document conversion using Adobe PDF Services."""
 
@@ -102,10 +97,8 @@ class AdobeConverter:
             return output_stream
 
         except Exception as e:
-            logger.debug("EXCEPTION in convert_docx_to_pdf: %s", e)
-            import traceback
-            traceback.print_exc()
-            logger.error(f"Adobe PDF Conversion failed: {e}")
+            logger.debug("EXCEPTION in convert_docx_to_pdf: %s", e, exc_info=True)
+            logger.error("Adobe PDF Conversion failed: %s", e)
             raise HTTPException(
                 status_code=500,
                 detail=f"PDF Conversion failed: {str(e)}"
