@@ -316,22 +316,17 @@ export default function TemplateEditor() {
 
             {/* Error Banner */}
             {error && (
-                <div className="mb-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center justify-between">
-                    <p className="text-red-400 text-sm">{error}</p>
-                    <button
-                        onClick={() => setError(null)}
-                        className="text-red-400 hover:text-red-300"
-                    >
-                        ✕
-                    </button>
+                <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-xl flex items-center justify-between">
+                    <p className="text-red-600 text-sm">{error}</p>
+                    <button onClick={() => setError(null)} className="text-red-400 hover:text-red-600">✕</button>
                 </div>
             )}
 
             {/* Loading State for Template from URL */}
             {isUploading && location.search.includes('templateId') && (
                 <div className="mb-6 p-8 text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-500 mx-auto mb-4"></div>
-                    <p className="text-slate-400">Loading template...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#FFE033] mx-auto mb-4"></div>
+                    <p className="text-[#6B7280]">Loading template...</p>
                 </div>
             )}
 
@@ -348,8 +343,8 @@ export default function TemplateEditor() {
                         cursor-pointer rounded-2xl border-2 border-dashed p-16 text-center
                         transition-all duration-200
                         ${isDragActive
-                            ? 'border-blue-500 bg-blue-500/5'
-                            : 'border-slate-700 hover:border-slate-600 bg-slate-900/50'
+                            ? 'border-[#FFE033] bg-[#FFFDF0]'
+                            : 'border-[#D1D5DB] hover:border-[#FFE033] bg-white'
                         }
                         ${isUploading ? 'opacity-50 pointer-events-none' : ''}
                     `}
@@ -357,21 +352,21 @@ export default function TemplateEditor() {
                     <input {...getInputProps()} />
 
                     <div className="flex flex-col items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center">
+                        <div className="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center">
                             <span className="text-3xl">📄</span>
                         </div>
 
                         {isUploading ? (
                             <div>
-                                <p className="text-lg font-medium text-white">Processing document...</p>
-                                <p className="text-sm text-slate-400 mt-1">Detecting highlighted fields</p>
+                                <p className="text-lg font-medium text-[#111827]">Processing document...</p>
+                                <p className="text-sm text-[#6B7280] mt-1">Detecting highlighted fields</p>
                             </div>
                         ) : (
                             <div>
-                                <p className="text-lg font-medium text-white">
+                                <p className="text-lg font-medium text-[#111827]">
                                     Drop your document here
                                 </p>
-                                <p className="text-sm text-slate-400 mt-1">
+                                <p className="text-sm text-[#6B7280] mt-1">
                                     Supports Word (.docx)
                                 </p>
                             </div>
@@ -382,15 +377,15 @@ export default function TemplateEditor() {
 
             {/* Template Editor - Document Card */}
             {templateState && templateState.fields && templateState.fields.length > 0 && (
-                <div className="bg-slate-900 rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+                <div className="card-highlight bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-sm">
                     {/* Card Header */}
-                    <div className="px-8 py-6 border-b border-slate-800 bg-slate-900/80">
+                    <div className="px-8 py-6 border-b border-[#E5E7EB] bg-white">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h1 className="text-xl font-semibold text-white">
+                                <h1 className="text-xl font-semibold text-[#111827]">
                                     {templateState.original_file_path}
                                 </h1>
-                                <p className="text-sm text-slate-400 mt-1">
+                                <p className="text-sm text-[#6B7280] mt-1">
                                     {templateState.fields?.length || 0} field{(templateState.fields?.length || 0) !== 1 ? 's' : ''} to complete
                                 </p>
                             </div>
@@ -398,13 +393,13 @@ export default function TemplateEditor() {
                                 <button
                                     onClick={handleSaveTemplate}
                                     type="button"
-                                    className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors flex items-center gap-1"
+                                    className="text-sm font-medium text-[#CA8A04] hover:text-[#A16207] transition-colors flex items-center gap-1"
                                 >
                                     <span>💾</span> Save to Library
                                 </button>
                                 <button
                                     onClick={handleNewFile}
-                                    className="text-sm text-slate-400 hover:text-white transition-colors"
+                                    className="text-sm text-[#6B7280] hover:text-[#111827] transition-colors"
                                 >
                                     ✕ Close
                                 </button>
@@ -416,7 +411,7 @@ export default function TemplateEditor() {
                             {/* Auto-save status */}
                             <div className="h-5">
                                 {saveStatus === 'saving' && (
-                                    <span className="text-xs text-slate-500 flex items-center gap-1.5 animate-pulse">
+                                    <span className="text-xs text-[#9CA3AF] flex items-center gap-1.5 animate-pulse">
                                         <span className="inline-block w-1.5 h-1.5 rounded-full bg-amber-400"></span>
                                         Saving…
                                     </span>
@@ -433,7 +428,7 @@ export default function TemplateEditor() {
                             <button
                                 type="button"
                                 onClick={() => setShowClearConfirm(true)}
-                                className="text-xs text-slate-500 hover:text-red-400 transition-colors"
+                                className="text-xs text-[#9CA3AF] hover:text-red-500 transition-colors"
                             >
                                 Clear Form
                             </button>
@@ -442,12 +437,12 @@ export default function TemplateEditor() {
 
                     {/* Clear Confirmation Banner */}
                     {showClearConfirm && (
-                        <div className="px-8 py-3 bg-red-500/10 border-b border-red-500/20 flex items-center justify-between">
-                            <p className="text-sm text-red-300">Clear all fields? This cannot be undone.</p>
+                        <div className="px-8 py-3 bg-red-50 border-b border-red-200 flex items-center justify-between">
+                            <p className="text-sm text-red-600">Clear all fields? This cannot be undone.</p>
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setShowClearConfirm(false)}
-                                    className="text-xs text-slate-400 hover:text-white transition-colors"
+                                    className="text-xs text-[#6B7280] hover:text-[#111827] transition-colors"
                                 >
                                     Cancel
                                 </button>
@@ -478,21 +473,21 @@ export default function TemplateEditor() {
                             ))}
                         </div>
 
-                        <div className="mt-8 pt-6 border-t border-slate-800 space-y-6">
+                        <div className="mt-8 pt-6 border-t border-[#E5E7EB] space-y-6">
                             {/* Format Selection - Prominent */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                <label className="text-sm font-medium text-[#6B7280] uppercase tracking-wider">
                                     1. Select Output Format
                                 </label>
-                                <div className="flex bg-slate-800 rounded-xl p-1.5 border border-slate-700 self-start">
+                                <div className="flex bg-[#F3F4F6] rounded-xl p-1.5 border border-[#E5E7EB] self-start">
                                     <button
                                         type="button"
                                         onClick={() => setOutputFormat('docx')}
                                         className={`
                                             px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2
                                             ${outputFormat === 'docx'
-                                                ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}
+                                                ? 'bg-[#1A1A1A] text-white shadow-lg border border-[#FFE033]'
+                                                : 'text-[#6B7280] hover:text-[#111827] hover:bg-white'}
                                         `}
                                     >
                                         <span>📝</span>
@@ -504,8 +499,8 @@ export default function TemplateEditor() {
                                         className={`
                                             px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-200 flex items-center gap-2
                                             ${outputFormat === 'pdf'
-                                                ? 'bg-red-600 text-white shadow-lg shadow-red-500/20'
-                                                : 'text-slate-400 hover:text-slate-200 hover:bg-slate-700'}
+                                                ? 'bg-[#1A1A1A] text-white shadow-lg border border-[#FFE033]'
+                                                : 'text-[#6B7280] hover:text-[#111827] hover:bg-white'}
                                         `}
                                     >
                                         <span>📄</span>
@@ -516,21 +511,21 @@ export default function TemplateEditor() {
 
                             {/* Filename Input */}
                             <div className="flex flex-col gap-2">
-                                <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                <label className="text-sm font-medium text-[#6B7280] uppercase tracking-wider">
                                     2. Filename (Optional)
                                 </label>
                                 <input
                                     type="text"
                                     value={customFilename}
                                     onChange={(e) => setCustomFilename(e.target.value)}
-                                    className="w-full px-4 py-2.5 bg-slate-800 border border-slate-700 rounded-lg text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                                    className="w-full px-4 py-2.5 bg-white border border-[#D1D5DB] rounded-lg text-sm text-[#111827] placeholder-[#9CA3AF] focus:outline-none focus:ring-2 focus:ring-[#FFE033] focus:border-transparent transition-all duration-200"
                                     placeholder="e.g. MyContract"
                                 />
                             </div>
 
                             <div className="flex items-center justify-between">
                                 <div className="flex flex-col gap-2 w-full">
-                                    <label className="text-sm font-medium text-slate-400 uppercase tracking-wider">
+                                    <label className="text-sm font-medium text-[#6B7280] uppercase tracking-wider">
                                         3. Generate
                                     </label>
                                     <div className="flex items-center justify-end gap-4">
@@ -539,12 +534,11 @@ export default function TemplateEditor() {
                                             disabled={isGenerating}
                                             className={`
                                                 px-6 py-4 rounded-xl font-bold text-base
-                                                bg-gradient-to-r from-blue-600 to-indigo-600 text-white
-                                                hover:from-blue-500 hover:to-indigo-500
-                                                focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-slate-900
+                                                bg-[#1A1A1A] hover:bg-[#333] text-white
+                                                focus:outline-none focus:ring-2 focus:ring-[#FFE033] focus:ring-offset-2 focus:ring-offset-white
                                                 transition-all duration-150
                                                 disabled:opacity-50 disabled:cursor-not-allowed
-                                                shadow-lg shadow-blue-500/20 flex-grow max-w-sm flex justify-center
+                                                shadow-lg flex-grow max-w-sm flex justify-center
                                             `}
                                         >
                                             {isGenerating ? (
@@ -569,20 +563,20 @@ export default function TemplateEditor() {
 
             {/* No Fields State */}
             {templateState && templateState.fields && templateState.fields.length === 0 && (
-                <div className="bg-slate-900 rounded-2xl border border-slate-800 p-12 text-center">
-                    <div className="w-16 h-16 rounded-full bg-slate-800 flex items-center justify-center mx-auto mb-4">
+                <div className="card-highlight bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center shadow-sm">
+                    <div className="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center mx-auto mb-4">
                         <span className="text-3xl">🔍</span>
                     </div>
-                    <h2 className="text-xl font-semibold text-white mb-2">
+                    <h2 className="text-xl font-semibold text-[#111827] mb-2">
                         No highlighted fields found
                     </h2>
-                    <p className="text-slate-400 mb-6 max-w-md mx-auto">
+                    <p className="text-[#6B7280] mb-6 max-w-md mx-auto">
                         We couldn't detect any yellow-highlighted text in your document.
                         Make sure to highlight the fields you want to make editable.
                     </p>
                     <button
                         onClick={handleNewFile}
-                        className="px-6 py-3 bg-slate-800 hover:bg-slate-700 text-white font-medium rounded-xl transition-colors"
+                        className="px-6 py-3 bg-[#1A1A1A] hover:bg-[#333] text-white font-medium rounded-xl transition-colors"
                     >
                         Try another file
                     </button>
