@@ -7,7 +7,7 @@
 
 ## Overview
 
-Apply the Option 1 logo ("The Mark") across the application, introduce a light theme for all user-facing pages, establish a yellow-bar design language derived from the logo, and add a footer watermark to free-tier document exports.
+Apply the Option 1 logo ("The Mark") across the application, introduce a light theme for all user-facing pages, establish a yellow-bar design language derived from the logo, and replace the existing diagonal watermark with a footer stamp on free-tier document exports.
 
 ---
 
@@ -15,11 +15,13 @@ Apply the Option 1 logo ("The Mark") across the application, introduce a light t
 
 ### Asset
 
-`docs/logo-option-1.svg` — a white document with a folded top-right corner, a solid `#FFE033` highlight bar sweeping across the middle third, and two pairs of gray lines above and below representing text.
+Source: `docs/logo-option-1.svg` — a white document with a folded top-right corner, a solid `#FFE033` highlight bar sweeping across the middle third, and two pairs of gray lines above and below representing text.
+
+Deployed location: copy to `frontend/public/logo.svg`. Import in React as a static asset via `<img src="/logo.svg" />` or inline as an SVG component for header use (inline preferred at 32px so stroke colors remain crisp at small sizes).
 
 ### Wordmark
 
-`Highlight` in `#111827` (dark), `Edit` in `#CA8A04` (dark yellow). The yellow on "Edit" echoes the logo's highlight bar and makes the app's purpose legible at a glance.
+`Highlight` in `#111827` (dark), `Edit` in `#CA8A04` (dark yellow). Replace the current `text-blue-400` accent on "Edit" in `App.tsx` line 32.
 
 ### Sizes
 
@@ -32,10 +34,10 @@ Apply the Option 1 logo ("The Mark") across the application, introduce a light t
 
 ### Placement
 
-- **Header:** Replace the current blue-gradient `H` box with the SVG logo at 32px. Update the wordmark accent from `text-blue-400` to `text-yellow-600` (`#CA8A04`).
-- **Favicon:** Generate a 16px PNG from the SVG and update `index.html`.
-- **Auth page:** Display logo at 64px above the sign-in card.
-- **Upgrade page:** Display logo at 128px in the hero section.
+- **Header (`App.tsx`):** Replace the blue-gradient `H` box (lines 28–33) with the inline SVG logo at 32px. Update wordmark accent color.
+- **Favicon:** Export a 16×16px PNG from `logo.svg`, save as `frontend/public/favicon.png`, update the `<link rel="icon">` in `frontend/index.html`.
+- **Auth pages (`Auth.tsx`, `ForgotPassword.tsx`, `ResetPassword.tsx`):** Display logo at 64px above the form card.
+- **Upgrade page (`Upgrade.tsx`):** Display logo at 128px in the hero section.
 
 ---
 
@@ -56,13 +58,18 @@ Blue is removed entirely from all user-facing pages. Yellow is the sole accent c
 | Black | `#1A1A1A` | Logo strokes, export button background |
 | Shadow | `0 1px 3px rgba(0,0,0,0.06)` | Card elevation |
 
-Update `index.css` CSS custom properties to reflect this palette. Update Tailwind config if needed.
+### Specific locations to update
+
+- `index.css`: update `body { background-color }` from `var(--color-slate-950)` to `#F9FAFB`. Update scrollbar colors to use light-theme grays. Update CSS custom properties.
+- `App.tsx` line 166: change `bg-slate-950` on the root `<div>` to `bg-[#F9FAFB]`. *(The Tailwind class overrides the body background; both must change.)*
+- `App.tsx` line 150 (mobile menu): replace `bg-blue-600 hover:bg-blue-500` "Upload New File" button with `bg-[#1A1A1A] hover:bg-[#333]` (black, matching export button style).
+- All remaining `text-blue-*`, `bg-blue-*`, `border-blue-*`, `from-blue-*`, `to-indigo-*` classes on user-facing pages must be replaced with yellow equivalents or neutrals.
 
 ---
 
 ## 3. Design Language — Yellow Bar Motif
 
-Every card and section panel on user-facing pages gets a **4px solid `#FFE033` top border**, echoing the highlight bar from the logo. This is the single most distinctive element of the redesign.
+Every card and section panel on user-facing pages gets a **4px solid `#FFE033` top border**, echoing the highlight bar from the logo.
 
 ```css
 .card-highlight {
@@ -90,10 +97,10 @@ Active/focused input fields use `border-color: #FFE033` with a subtle `#FFFDF0` 
 |---|---|---|
 | Main editor | `TemplateEditor.tsx` | Light background, yellow-bar cards, new input styles |
 | Templates list | `TemplatesList.tsx` | Light background, template cards with yellow-bar motif |
-| Auth (sign in) | `Auth.tsx` | Light background, logo above card, yellow-bar form card |
+| Auth (sign in) | `Auth.tsx` | Light background, logo 64px above card, yellow-bar form card |
 | Forgot password | `ForgotPassword.tsx` | Light background, logo, yellow-bar card |
 | Reset password | `ResetPassword.tsx` | Light background, logo, yellow-bar card |
-| Upgrade | `Upgrade.tsx` | Light background, logo hero, yellow-bar pricing cards |
+| Upgrade | `Upgrade.tsx` | Light background, logo 128px hero, yellow-bar pricing cards |
 
 ### Admin — unchanged (dark theme)
 
@@ -104,45 +111,69 @@ Active/focused input fields use `border-color: #FFE033` with a subtle `#FFFDF0` 
 
 ### Shared
 
-- `App.tsx` (Header): new logo, updated wordmark, light nav background (`#FFFFFF`), border bottom `#E5E7EB`.
-- `index.css`: updated CSS custom properties and base styles.
+- **`App.tsx` (Header):** new inline SVG logo, updated wordmark, white nav background (`#FFFFFF`), `border-b border-[#E5E7EB]`, dark text for nav links. Mobile "Upload New File" button → black (see Section 2).
+- **`index.css`:** updated CSS custom properties, body background, scrollbar styles.
 
 ---
 
 ## 5. Watermark — Free Tier Exports
 
-A branded footer bar is appended to every page of `.docx` and `.pdf` exports generated by free-plan users.
+Replace the existing diagonal VML text watermark in `backend/app/utils/watermark.py` with a branded footer paragraph appended to the document body.
 
 ### Content
 
 ```
-[logo 16px]  Created with HighlightEdit · Free Plan · highlightedit.com
+[logo mark — 16×16px PNG inline image]  Created with HighlightEdit · Free Plan · highlightedit.com
 ```
 
 ### Styling
 
-- Background: `#FAFAFA`
-- Top border: `1px solid #E5E7EB`
-- Text: `#6B7280`, with "HighlightEdit" in `#374151` bold
+- Text color: light gray (`#6B7280` equivalent — use `RGBColor(107, 114, 128)` in python-docx)
+- "HighlightEdit" bold, slightly darker (`RGBColor(55, 65, 81)`)
 - Font size: 9pt
-- Placement: bottom of every exported page
+- Paragraph alignment: left
+- Separated from document content by a thin horizontal rule or spacing
 
 ### Implementation
 
-- **DOCX:** Inject a footer paragraph in the python-docx export logic (`backend/`). Style via paragraph formatting — light gray text, small font, logo embedded as an inline image.
-- **PDF:** Add a footer via the PDF generation step. If WeasyPrint/ReportLab is used, inject a page footer element.
-- **Gating:** Check `user.is_paid` before export. If `False`, attach watermark. If `True`, export clean.
+- **DOCX:** Create `backend/app/utils/watermark.py` (this file does not currently exist). Implement an `add_footer_watermark(doc)` function that appends a footer paragraph to the document after all content is filled. Embed the logo as a small inline image using `paragraph.add_run().add_picture(logo_path, width=Pt(10))`, followed by the text "Created with HighlightEdit · Free Plan · highlightedit.com" in 9pt light gray.
+- **PDF:** The PDF pipeline uses Adobe PDF Services (`AdobeConverter.convert_docx_to_pdf` in `backend/app/utils/`). The footer must be injected into the DOCX **before** conversion — there is no separate PDF injection step. The DOCX watermark implementation therefore covers both formats automatically.
+- **Gating:** The existing export endpoint in `backend/app/api/routes/templates.py` already checks `current_user.is_paid`. Apply the watermark with this logic:
+  ```python
+  if current_user is not None and not current_user.is_paid:
+      add_footer_watermark(doc)
+  ```
+  Unauthenticated requests and Pro users (`is_paid=True`) both receive a clean export.
 
 ---
 
 ## 6. Success Criteria
 
-- [ ] Logo appears correctly at all sizes and in all specified placements
-- [ ] All user-facing pages use the light theme with no blue accents remaining
-- [ ] Every card/panel on user-facing pages has the 4px yellow top bar
-- [ ] Active/focused inputs show yellow border and tint
-- [ ] Admin and Analytics pages are visually unchanged
-- [ ] Free-tier `.docx` exports have the footer stamp on every page
-- [ ] Free-tier `.pdf` exports have the footer stamp on every page
-- [ ] Pro-tier exports have no watermark
-- [ ] Favicon updated to new logo
+### Logo
+- [ ] Logo SVG at 32px renders correctly in the header (inline, crisp strokes)
+- [ ] Favicon updated to new logo PNG
+- [ ] Logo appears at 64px on all auth pages
+- [ ] Logo appears at 128px on the upgrade page
+
+### Theme — blue audit checklist
+- [ ] `App.tsx`: no remaining `blue` or `indigo` Tailwind classes on user-facing elements
+- [ ] `App.tsx` root div: `bg-[#F9FAFB]` (not `bg-slate-950`)
+- [ ] `App.tsx` mobile "Upload New File" button: black (not `bg-blue-600`)
+- [ ] `index.css`: body background is `#F9FAFB`, scrollbar colors are light-theme grays
+- [ ] `TemplateEditor.tsx`: no blue classes
+- [ ] `TemplatesList.tsx`: no blue classes
+- [ ] `Auth.tsx`, `ForgotPassword.tsx`, `ResetPassword.tsx`: no blue classes
+- [ ] `Upgrade.tsx`: no blue classes
+
+### Design language
+- [ ] Every card/panel on user-facing pages has the 4px `#FFE033` top border
+- [ ] Active/focused inputs show yellow border and `#FFFDF0` tint
+
+### Admin pages
+- [ ] `Admin.tsx` is visually unchanged (dark)
+- [ ] `Analytics.tsx` is visually unchanged (dark)
+
+### Watermark
+- [ ] Free-tier `.docx` exports: footer paragraph present on document, no diagonal watermark
+- [ ] Free-tier `.pdf` exports (via Adobe conversion): footer paragraph present
+- [ ] Pro-tier exports: no watermark of any kind
