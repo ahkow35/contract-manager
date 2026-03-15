@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import Logo from '../components/Logo';
 
 const AuthPage: React.FC = () => {
     const [isLogin, setIsLogin] = useState(true);
@@ -41,10 +42,13 @@ const AuthPage: React.FC = () => {
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-md">
+        <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] py-12 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm border border-[#E5E7EB] card-highlight">
+                <div className="flex justify-center mb-4">
+                    <Logo size={64} />
+                </div>
                 <div>
-                    <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                    <h2 className="mt-6 text-center text-3xl font-extrabold text-[#111827]">
                         {isLogin ? 'Sign in to your account' : 'Create a new account'}
                     </h2>
                     {!isLogin && (
@@ -67,7 +71,7 @@ const AuthPage: React.FC = () => {
                                 autoComplete="email"
                                 type="email"
                                 required
-                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-[#FFE033] focus:border-[#FFE033] focus:z-10 sm:text-sm"
                                 placeholder="Email address"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
@@ -80,7 +84,7 @@ const AuthPage: React.FC = () => {
                                 autoComplete={isLogin ? "current-password" : "new-password"}
                                 type="password"
                                 required
-                                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-b-md' : ''} focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm`}
+                                className={`appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 ${isLogin ? 'rounded-b-md' : ''} focus:outline-none focus:ring-[#FFE033] focus:border-[#FFE033] focus:z-10 sm:text-sm`}
                                 placeholder="Password"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -91,7 +95,7 @@ const AuthPage: React.FC = () => {
                                 <input
                                     type="text"
                                     required
-                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-blue-500 focus:border-blue-500 focus:z-10 sm:text-sm"
+                                    className="appearance-none rounded-none relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-[#FFE033] focus:border-[#FFE033] focus:z-10 sm:text-sm"
                                     placeholder="Invite code"
                                     value={inviteCode}
                                     onChange={(e) => setInviteCode(e.target.value)}
@@ -107,7 +111,7 @@ const AuthPage: React.FC = () => {
                                     id="remember_me"
                                     name="remember_me"
                                     type="checkbox"
-                                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                    className="h-4 w-4 text-[#CA8A04] focus:ring-[#FFE033] border-gray-300 rounded"
                                     checked={rememberEmail}
                                     onChange={(e) => setRememberEmail(e.target.checked)}
                                 />
@@ -120,7 +124,7 @@ const AuthPage: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => navigate('/forgot-password')}
-                                    className="font-medium text-blue-600 hover:text-blue-500"
+                                    className="font-medium text-[#CA8A04] hover:text-[#A16207]"
                                 >
                                     Forgot your password?
                                 </button>
@@ -131,7 +135,7 @@ const AuthPage: React.FC = () => {
                     <div>
                         <button
                             type="submit"
-                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                            className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#1A1A1A] hover:bg-[#333] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#FFE033]"
                         >
                             {isLogin ? 'Sign in' : 'Sign up'}
                         </button>
@@ -139,7 +143,7 @@ const AuthPage: React.FC = () => {
                 </form>
                 <div className="text-center">
                     <button
-                        className="text-sm text-blue-600 hover:text-blue-500"
+                        className="text-sm text-[#CA8A04] hover:text-[#A16207]"
                         onClick={() => setIsLogin(!isLogin)}
                     >
                         {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
