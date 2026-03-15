@@ -344,7 +344,7 @@ export default function TemplateEditor() {
                         transition-all duration-200
                         ${isDragActive
                             ? 'border-[#FFE033] bg-[#FFFDF0]'
-                            : 'border-[#D1D5DB] hover:border-[#FFE033] bg-white'
+                            : 'border-[#D1D5DB] hover:border-[#FFE033] bg-[#FAF9F6]'
                         }
                         ${isUploading ? 'opacity-50 pointer-events-none' : ''}
                     `}
@@ -377,9 +377,9 @@ export default function TemplateEditor() {
 
             {/* Template Editor - Document Card */}
             {templateState && templateState.fields && templateState.fields.length > 0 && (
-                <div className="card-highlight bg-white rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-sm">
+                <div className="card-highlight bg-[#FAF9F6] rounded-2xl border border-[#E5E7EB] overflow-hidden shadow-sm">
                     {/* Card Header */}
-                    <div className="px-8 py-6 border-b border-[#E5E7EB] bg-white">
+                    <div className="px-8 py-6 border-b border-[#E5E7EB] bg-[#FAF9F6]">
                         <div className="flex items-center justify-between">
                             <div>
                                 <h1 className="text-xl font-semibold text-[#111827]">
@@ -563,7 +563,7 @@ export default function TemplateEditor() {
 
             {/* No Fields State */}
             {templateState && templateState.fields && templateState.fields.length === 0 && (
-                <div className="card-highlight bg-white rounded-2xl border border-[#E5E7EB] p-12 text-center shadow-sm">
+                <div className="card-highlight bg-[#FAF9F6] rounded-2xl border border-[#E5E7EB] p-12 text-center shadow-sm">
                     <div className="w-16 h-16 rounded-full bg-[#F3F4F6] flex items-center justify-center mx-auto mb-4">
                         <span className="text-3xl">🔍</span>
                     </div>

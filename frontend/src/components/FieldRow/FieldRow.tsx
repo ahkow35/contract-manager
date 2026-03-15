@@ -51,14 +51,14 @@ export default function FieldRow({
                 {/* Primary Label - Original Text */}
                 <label
                     htmlFor={fieldName}
-                    className="text-base font-semibold text-white leading-tight"
+                    className="text-base font-semibold text-[#111827] leading-tight"
                 >
                     {originalText}
                 </label>
 
                 {/* Location Badge */}
                 {(paragraph || page) && (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-slate-700/50 text-slate-400">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-[#F3F4F6] text-[#6B7280]">
                         {page && `Page ${page}`}
                         {page && paragraph && ' · '}
                         {paragraph && `¶${paragraph}`}
@@ -68,9 +68,9 @@ export default function FieldRow({
 
             {/* Context Preview (if available) */}
             {(contextBefore || contextAfter) && (
-                <div className="mb-2 text-sm text-slate-500 font-mono">
+                <div className="mb-2 text-sm text-[#6B7280] font-mono">
                     {contextBefore && <span>...{contextBefore} </span>}
-                    <span className="bg-yellow-500/20 text-yellow-300 px-1 rounded">
+                    <span className="bg-[#FFFDF0] text-[#CA8A04] px-1 rounded">
                         {originalText}
                     </span>
                     {contextAfter && <span> {contextAfter}...</span>}
@@ -81,26 +81,26 @@ export default function FieldRow({
             <input
                 type={getInputType()}
                 id={fieldName}
-                placeholder={`Enter ${fieldType === 'date' ? 'date' : 'value'}...`}
+                placeholder={({ date: 'Enter date...', email: 'Enter email...', phone: 'Enter phone number...', number: 'Enter number...', currency: 'Enter amount...' } as Record<string, string>)[fieldType] ?? 'Enter field...'}
                 {...register(fieldName, { required: 'Required' })}
                 className={`
                     w-full px-4 py-3
-                    bg-slate-900/50 
+                    bg-white
                     border rounded-lg
-                    text-white text-base
-                    placeholder:text-slate-500
+                    text-[#111827] text-base
+                    placeholder:text-[#9CA3AF]
                     transition-all duration-150
-                    focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+                    focus:outline-none focus:ring-2 focus:ring-[#FFE033] focus:border-transparent focus:bg-[#FFFDF0]
                     ${hasError
-                        ? 'border-red-500/50 focus:ring-red-500'
-                        : 'border-slate-600/50 hover:border-slate-500'
+                        ? 'border-red-300 focus:ring-red-400'
+                        : 'border-[#D1D5DB] hover:border-[#FFE033]'
                     }
                 `}
             />
 
             {/* Error Message */}
             {hasError && (
-                <p className="mt-1.5 text-sm text-red-400">
+                <p className="mt-1.5 text-sm text-red-500">
                     {errors[fieldName]?.message as string}
                 </p>
             )}

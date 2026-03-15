@@ -50,7 +50,7 @@ const UpgradePage: React.FC = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
 
                     {/* Free Plan */}
-                    <div className="card-highlight bg-white border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
+                    <div className="card-highlight bg-[#FAF9F6] border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
                         <h2 className="text-2xl font-bold text-[#111827] mb-2">Free</h2>
                         <p className="text-4xl font-extrabold text-[#111827] mb-1">$0</p>
                         <p className="text-sm text-[#6B7280] mb-6">Forever free</p>
@@ -83,7 +83,7 @@ const UpgradePage: React.FC = () => {
                     </div>
 
                     {/* Pro Plan */}
-                    <div className="card-highlight bg-white border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
+                    <div className="card-highlight bg-[#FAF9F6] border border-[#E5E7EB] rounded-2xl p-8 shadow-sm">
                         <h2 className="text-2xl font-bold text-[#111827] mb-2">Pro</h2>
                         <p className="text-4xl font-extrabold text-[#111827] mb-1">$9.99</p>
                         <p className="text-sm text-[#6B7280] mb-6">per month · Cancel anytime</p>

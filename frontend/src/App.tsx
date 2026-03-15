@@ -1,5 +1,5 @@
 import { BrowserRouter, Routes, Route, Link, useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import TemplateEditor from './pages/TemplateEditor';
 import AuthPage from './pages/Auth';
 import UpgradePage from './pages/Upgrade';
@@ -14,9 +14,12 @@ import Logo from './components/Logo';
 // Admin email for conditional navbar link
 const ADMIN_EMAIL = 'nyanyk@gmail.com';
 
-function Header() {
+interface HeaderProps {
+    onLogoClick: () => void;
+}
+
+function Header({ onLogoClick }: HeaderProps) {
     const { user, logout, isAuthenticated } = useAuth();
-    const navigate = useNavigate();
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
     return (
@@ -25,12 +28,15 @@ function Header() {
                 {/* Main Header Row */}
                 <div className="flex items-center justify-between">
                     {/* Logo */}
-                    <Link to="/" className="flex items-center gap-2 sm:gap-3 hover:opacity-90 transition-opacity">
-                        <Logo size={32} />
-                        <span className="text-base sm:text-lg font-semibold text-[#111827] tracking-tight">
+                    <button
+                        onClick={onLogoClick}
+                        className="flex items-center gap-2 sm:gap-3 hover:opacity-85 transition-opacity"
+                    >
+                        <Logo size={44} />
+                        <span className="text-xl sm:text-2xl font-bold text-[#111827] tracking-tight">
                             Highlight<span className="text-[#CA8A04]">Edit</span>
                         </span>
-                    </Link>
+                    </button>
 
                     {/* Desktop Navigation */}
                     <div className="hidden lg:flex items-center gap-4">
@@ -69,7 +75,7 @@ function Header() {
                         )}
 
                         <button
-                            onClick={() => navigate('/')}
+                            onClick={onLogoClick}
                             className="px-4 py-2 text-sm font-medium text-white bg-[#1A1A1A] hover:bg-[#333] border border-[#1A1A1A] rounded-lg transition-colors"
                         >
                             Upload New File
@@ -145,7 +151,7 @@ function Header() {
                         )}
 
                         <button
-                            onClick={() => { navigate('/'); setMobileMenuOpen(false); }}
+                            onClick={() => { onLogoClick(); setMobileMenuOpen(false); }}
                             className="w-full px-4 py-3 text-sm font-medium text-white bg-[#1A1A1A] hover:bg-[#333] rounded-lg transition-colors"
                         >
                             Upload New File
@@ -159,25 +165,39 @@ function Header() {
 
 import ErrorBoundary from './components/ErrorBoundary';
 
+function AppContent() {
+    const [editorKey, setEditorKey] = useState(0);
+    const navigate = useNavigate();
+
+    const handleLogoClick = useCallback(() => {
+        setEditorKey(k => k + 1);
+        navigate('/');
+    }, [navigate]);
+
+    return (
+        <div className="min-h-screen bg-[#F9FAFB]">
+            <Header onLogoClick={handleLogoClick} />
+            {/* Main Content */}
+            <main className="py-8">
+                <Routes>
+                    <Route path="/" element={<ErrorBoundary><TemplateEditor key={editorKey} /></ErrorBoundary>} />
+                    <Route path="/auth" element={<AuthPage />} />
+                    <Route path="/upgrade" element={<UpgradePage />} />
+                    <Route path="/templates" element={<TemplatesList />} />
+                    <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                    <Route path="/reset-password" element={<ResetPasswordPage />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/analytics" element={<AnalyticsPage />} />
+                </Routes>
+            </main>
+        </div>
+    );
+}
+
 function App() {
     return (
         <BrowserRouter>
-            <div className="min-h-screen bg-[#F9FAFB]">
-                <Header />
-                {/* Main Content */}
-                <main className="py-8">
-                    <Routes>
-                        <Route path="/" element={<ErrorBoundary><TemplateEditor /></ErrorBoundary>} />
-                        <Route path="/auth" element={<AuthPage />} />
-                        <Route path="/upgrade" element={<UpgradePage />} />
-                        <Route path="/templates" element={<TemplatesList />} />
-                        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
-                        <Route path="/reset-password" element={<ResetPasswordPage />} />
-                        <Route path="/admin" element={<AdminPage />} />
-                        <Route path="/analytics" element={<AnalyticsPage />} />
-                    </Routes>
-                </main>
-            </div>
+            <AppContent />
         </BrowserRouter>
     );
 }

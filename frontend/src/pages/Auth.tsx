@@ -43,7 +43,7 @@ const AuthPage: React.FC = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-[#F9FAFB] py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-md w-full space-y-8 bg-white p-8 rounded-lg shadow-sm border border-[#E5E7EB] card-highlight">
+            <div className="max-w-md w-full space-y-8 bg-[#FAF9F6] p-8 rounded-lg shadow-sm border border-[#E5E7EB] card-highlight">
                 <div className="flex justify-center mb-4">
                     <Logo size={64} />
                 </div>

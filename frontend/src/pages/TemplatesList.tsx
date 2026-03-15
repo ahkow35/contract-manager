@@ -70,7 +70,7 @@ const TemplatesList: React.FC = () => {
             )}
 
             {templates.length === 0 && !error ? (
-                <div className="text-center py-20 bg-white rounded-lg border border-[#E5E7EB]">
+                <div className="text-center py-20 bg-[#FAF9F6] rounded-lg border border-[#E5E7EB]">
                     <p className="text-[#6B7280] text-lg mb-4">You haven't saved any templates yet.</p>
                     <button
                         onClick={() => navigate('/')}
@@ -85,7 +85,7 @@ const TemplatesList: React.FC = () => {
                         <div
                             key={template.id}
                             onClick={() => handleTemplateClick(template.id)}
-                            className="card-highlight bg-white border border-[#E5E7EB] rounded-xl p-6 cursor-pointer hover:shadow-md transition-shadow"
+                            className="card-highlight bg-[#FAF9F6] border border-[#E5E7EB] rounded-xl p-6 cursor-pointer hover:shadow-md transition-shadow"
                         >
                             <div className="flex items-start justify-between mb-4">
                                 <div className="p-3 bg-[#FFF9C4] rounded-lg transition-colors">

@@ -357,7 +357,7 @@ def _infer_field_type(text: str) -> str:
         r'\d{1,2}/\d{1,2}/\d{2,4}',  # MM/DD/YYYY or DD/MM/YYYY
         r'\d{1,2}-\d{1,2}-\d{2,4}',  # MM-DD-YYYY
         r'\d{4}-\d{2}-\d{2}',         # YYYY-MM-DD
-        r'(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)',
+        r'\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\b',
     ]
     for pattern in date_patterns:
         if re.search(pattern, text_lower):
