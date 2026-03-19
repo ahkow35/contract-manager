@@ -29,6 +29,9 @@ pipeline {
         stage('Build and Push to Secure Registry') {
             steps {
                 script {
+                    echo "Pruning Docker builder cache to clear any corrupt snapshots..."
+                    sh 'docker builder prune -af'
+
                     echo "Building image..."
                     // use short git commit SHA as image tag so image <-> commit mapping is obvious
                     def commitId = sh(script: 'git rev-parse --short HEAD', returnStdout: true).trim()
