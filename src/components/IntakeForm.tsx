@@ -61,6 +61,12 @@ export function IntakeForm({ templateId }: { templateId: string }) {
       const buf = await res.arrayBuffer();
       const blob = renderDocx(buf, template!.tokens(values));
       downloadBlob(blob, template!.fileName(values));
+      // Log usage — template + user + timestamp only, never any field values. Fire-and-forget.
+      void fetch('/api/usage', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ templateId: template!.id }),
+      }).catch(() => {});
     } catch (e) {
       setErrors([e instanceof Error ? e.message : 'Failed to generate document.']);
     } finally {

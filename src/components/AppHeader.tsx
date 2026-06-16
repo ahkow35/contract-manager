@@ -13,7 +13,16 @@ export async function AppHeader() {
           Contract Manager
         </Link>
         {isSupabaseConfigured ? (
-          user ? <SignOutButton email={user.email} /> : <Link href="/login" className="text-sm text-zinc-600 hover:text-zinc-900">Sign in</Link>
+          user ? (
+            <div className="flex items-center gap-4">
+              {user.role === 'admin' && (
+                <Link href="/admin" className="text-sm text-zinc-600 hover:text-zinc-900">Admin</Link>
+              )}
+              <SignOutButton email={user.email} />
+            </div>
+          ) : (
+            <Link href="/login" className="text-sm text-zinc-600 hover:text-zinc-900">Sign in</Link>
+          )
         ) : (
           <span className="text-xs rounded bg-yellow-50 text-yellow-800 border border-yellow-200 px-2 py-1">
             dev mode · auth off
