@@ -6,6 +6,8 @@ import { amountToWords } from '@/lib/merge/amount-to-words';
 import { downloadBlob, renderDocx } from '@/lib/merge/docx';
 import { getTemplate } from '@/lib/merge/registry';
 import type { FieldDef, FormValues } from '@/lib/merge/types';
+import type { OcrExtract } from '@/lib/ocr/extract';
+import { OcrPanel } from './OcrPanel';
 
 function initialValues(fields: FieldDef[]): FormValues {
   const v: FormValues = {};
@@ -32,6 +34,17 @@ export function IntakeForm({ templateId }: { templateId: string }) {
       if (id === 'salaryFigure' && hasSalaryWords && !prev.salaryWords) {
         next.salaryWords = amountToWords(value);
       }
+      return next;
+    });
+  }
+
+  function applyOcr(extract: OcrExtract) {
+    setValues((prev) => {
+      const next = { ...prev };
+      for (const f of template!.fields) {
+        if (f.ocrSource && extract[f.ocrSource]) next[f.id] = extract[f.ocrSource]!;
+      }
+      // keep salary words in sync if name/etc changed nothing relevant — no-op here
       return next;
     });
   }
@@ -67,11 +80,9 @@ export function IntakeForm({ templateId }: { templateId: string }) {
         downloaded directly — nothing is uploaded to any server.
       </p>
 
-      {template.ocr && (
-        <p className="mt-3 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2 text-xs text-zinc-500">
-          ID-card OCR pre-fill is coming in the next phase. For now, enter details manually.
-        </p>
-      )}
+      <div className="mt-4">
+        {template.ocr && <OcrPanel jurisdiction={template.jurisdiction} onApply={applyOcr} />}
+      </div>
 
       <form
         className="mt-6 space-y-4"

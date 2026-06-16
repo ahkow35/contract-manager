@@ -58,14 +58,18 @@ tiers, analytics, admin. **Reference-only:** old `docx_parser.py` / `document_ge
 - [x] **End-to-end render test** proves a correct filled contract (no leftover tokens, sample stripped). Carmen oracle confirmed the field set.
 - **Gate:** ✅ pick → fill → download correct doc, fully client-side. [ ] live network-tab INV-1 proof = Phase 5.
 
-## Phase 3 — ID-card OCR pre-fill (port the proven setup)
-- [ ] Mount Tesseract.js + engine files same-origin (`public/`); verify 0 off-origin requests on Vercel.
-- [ ] Scan image (in-memory) → extract Name + NRIC/MyKad → map to fields → operator verifies vs on-screen
-      image before generate. Assist, not authority. Manual fallback always.
-- [ ] Per-jurisdiction extraction: SG NRIC (fixed pattern, reliable) vs MY MyKad layout (name/address tuning).
-- [ ] OCR step shown only on `ocrSource` templates.
-- **Risk:** name/address OCR accuracy on real cards (NRIC pattern already reliable). Mitigated by verify step.
-- **Gate:** scan → pre-fill → correct → generate works; INV-4 verified.
+## Phase 3 — ID-card OCR pre-fill (built; live verification blocked) ◑
+- [x] Tesseract.js 7 installed; engine files staged **same-origin** under `public/ocr/` (worker + core
+      wasm + `eng.traineddata.gz`) via `scripts/setup-ocr.mjs`, wired as `prebuild` (no CDN at runtime → INV-4).
+- [x] Extraction (`src/lib/ocr/extract.ts`): SG NRIC + MY MyKad (regex, reliable, 7 tests) + name/address
+      heuristics (label-aware). Client recognizer (`recognize.ts`) loads everything from `/ocr`.
+- [x] `OcrPanel` UI: file/camera input → in-browser recognise → extracted fields → operator verifies vs
+      on-screen image → "Apply to form". Manual entry always available. Shown only on `ocr:true` templates.
+- [x] Per-jurisdiction: SG NRIC vs MY MyKad number, normalised.
+- [ ] **BLOCKED — live accuracy:** name/address tuning needs a real SG NRIC / MyKad sample image; the WASM
+      worker can't be exercised headlessly here. NRIC/MyKad *number* extraction is unit-verified.
+- [ ] **Live "0 off-origin requests" proof** = browser network-tab (Phase 5 audit). Same-origin by construction.
+- **Gate:** ◑ code complete + extraction tested; live scan accuracy pending a sample card.
 
 ## Phase 4 — Template library + the suite
 - [ ] Convert binary `.doc` templates → `.docx` (Word "Save As"): **Non-Local Secondment**, **Internal

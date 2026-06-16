@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     // Archived pre-rebuild stack — not part of the new app.
     "legacy/**",
+    // Vendored OCR engine assets (Tesseract worker/wasm/lang) — not our source.
+    "public/ocr/**",
   ]),
 ]);
 

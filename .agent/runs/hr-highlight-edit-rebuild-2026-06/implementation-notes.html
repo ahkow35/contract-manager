@@ -91,8 +91,9 @@
 
   <h2>Resume Here</h2>
   <ul>
-    <li><strong>Status:</strong> Phases 0–2 COMPLETE &amp; verified. Working PDPA-safe SG contract generator builds, type-checks, lints, and passes 48/48 tests including an end-to-end render of the real INWW Local Secondment contract.</li>
-    <li><strong>Current phase:</strong> Handoff for review. Phase 3 (OCR) + Phase 4 (letter suite) pending; some blocked on user file drops.</li>
+    <li><strong>Status:</strong> Phases 0–2 COMPLETE &amp; verified; Phase 3 (OCR) CODE COMPLETE (live accuracy blocked on a sample card). Builds, type-checks, lints, 55/55 tests. Runtime smoke test passed (prod server, all routes 200, blank template served same-origin).</li>
+    <li><strong>Current phase:</strong> Phase 3 OCR built (extraction unit-tested; live WASM recognition needs a real card + browser). Phase 4 (letter suite) + Phase 5 (audit/deploy) pending; several items blocked on user file drops.</li>
+    <li><strong>OCR (Phase 3):</strong> Tesseract.js 7, engine files staged SAME-ORIGIN under <code>public/ocr/</code> via <code>scripts/setup-ocr.mjs</code> (wired as <code>prebuild</code>; assets gitignored + regenerated). <code>src/lib/ocr/</code> = extraction (SG NRIC + MY MyKad + name/address) + client recognizer; <code>OcrPanel</code> integrated into the form with operator-verify. INV-4 same-origin by construction (no CDN).</li>
     <li><strong>Stack:</strong> Next.js 16.2.9 (App Router, TS, Tailwind v4) at repo root; old Python/React archived to <code>legacy/</code>. Engine = docxtemplater + pizzip, client-side only. Supabase auth wired (non-blocking dev mode when env absent).</li>
     <li><strong>What works:</strong> <code>/</code> template list → <code>/t/sg-local-secondment</code> intake form → fill → generate <code>.docx</code> in-browser → download. SG NRIC checksum, salary-to-words auto-fill, ordinal dates. All PII client-side (INV-1).</li>
     <li><strong>Validation commands:</strong> <code>npx tsc --noEmit</code> (clean) · <code>npx eslint .</code> (clean) · <code>npx vitest run</code> (48/48) · <code>npx next build</code> (ok — run with sandbox disabled locally due to Turbopack PostCSS worker needing a port).</li>
@@ -186,6 +187,20 @@
         phase: "P2 verify",
         actor: "agent",
         summary: "Full verification green: tsc clean, eslint clean, next build success, 48/48 tests incl. end-to-end render of the real contract with a fresh employee (no leftover tokens, sample stripped, dates/salary/leave correct). Phases 0-2 complete."
+      },
+      {
+        ts: "2026-06-17T01:20:00Z",
+        status: "done",
+        phase: "commit + smoke",
+        actor: "agent",
+        summary: "Committed phases 0-2 on branch rebuild/pdpa-safe-nextjs (legacy/ + secrets/venvs/db excluded; blank template included). Runtime smoke test: prod server, / + /t/sg-local-secondment + /login = 200, template served same-origin with correct MIME."
+      },
+      {
+        ts: "2026-06-17T01:40:00Z",
+        status: "done",
+        phase: "P3 OCR",
+        actor: "agent",
+        summary: "OCR built: Tesseract.js 7, same-origin engine files via setup-ocr.mjs (prebuild, gitignored). Extraction (SG NRIC/MY MyKad/name/address) 7 tests; OcrPanel integrated with operator-verify. tsc/eslint clean, 55/55 tests, next build ok. BLOCKED: live card accuracy (needs sample image + browser worker)."
       }
     ];
 
