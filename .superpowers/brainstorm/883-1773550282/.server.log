@@ -1,0 +1,9 @@
+{"type":"server-started","port":58278,"host":"127.0.0.1","url_host":"localhost","url":"http://localhost:58278","screen_dir":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282"}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/current-state.html"}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/theme-options.html"}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/waiting-1.html"}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/design-language.html"}
+{"source":"user-event","type":"click","text":"HighlightEdit\n      \n      \n        \n        \n          \n          \n          \n            Upload Document\n            \n              Drop .docx file here\n            \n          \n        \n        \n        \n          \n          \n            Form Fields (2)\n            Recipient Name\n            Enter value...\n            Effective Date\n            Enter value...\n          \n        \n      \n    \n    \n      B — Yellow Bar as Motif\n      A thin yellow bar crowns every card/section — echoing the highlight crossing the document in the logo. The UI literally looks like the logo at large scale. Distinctive and ownable.","choice":"motif","id":null,"timestamp":1773550803510}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/watermark-options.html"}
+{"type":"screen-added","file":"/Users/nyanyk/Antigravity/HighlightEdit/.superpowers/brainstorm/883-1773550282/waiting-2.html"}
+{"type":"server-stopped","reason":"idle timeout"}

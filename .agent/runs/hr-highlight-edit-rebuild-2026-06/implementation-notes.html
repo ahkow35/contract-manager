@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>HR Highlight Edit — PDPA-safe rebuild (contract-first) - Implementation Notes</title>
+  <style>
+    body {
+      color: #202124;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      line-height: 1.55;
+      margin: 0 auto;
+      max-width: 920px;
+      padding: 40px 24px;
+    }
+    h1, h2 { line-height: 1.2; }
+    code {
+      background: #f1f3f4;
+      border-radius: 4px;
+      padding: 2px 5px;
+    }
+    .meta {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      padding: 16px;
+    }
+    .timeline {
+      background: #f8f9fa;
+      border: 1px solid #dadce0;
+      border-radius: 8px;
+      max-height: 360px;
+      overflow: auto;
+      padding: 8px;
+    }
+    .timeline-note {
+      color: #5f6368;
+      margin-bottom: 10px;
+    }
+    .event {
+      background: #fff;
+      border: 1px solid #e8eaed;
+      border-radius: 8px;
+      margin: 8px 0;
+      padding: 12px 14px;
+    }
+    .event-head {
+      align-items: center;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+    .event-summary {
+      margin: 0;
+    }
+    .event time {
+      color: #5f6368;
+      font-size: 13px;
+    }
+    .badge, .phase, .actor {
+      border-radius: 999px;
+      display: inline-block;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+      padding: 5px 8px;
+      text-transform: uppercase;
+    }
+    .badge { background: #e8f0fe; color: #174ea6; }
+    .status-done, .status-validated { background: #e6f4ea; color: #137333; }
+    .status-blocked, .status-failed { background: #fce8e6; color: #c5221f; }
+    .status-decision { background: #fef7e0; color: #b06000; }
+    .phase, .actor {
+      background: #f1f3f4;
+      color: #3c4043;
+      font-weight: 600;
+    }
+    li { margin: 6px 0; }
+  </style>
+</head>
+<body>
+  <h1>HR Highlight Edit — PDPA-safe rebuild (contract-first)</h1>
+  <div class="meta">
+    <p><strong>Goal ID:</strong> <code>hr-highlight-edit-rebuild-2026-06</code></p>
+    <p><strong>Started:</strong> 2026-06-16T16:43:33Z</p>
+    <p><strong>Parent goal:</strong> none</p>
+    <p><strong>Mode:</strong> full</p>
+    <p><strong>Objective:</strong> Rebuild highlight-edit in place as a PDPA-safe Next.js+Vercel+Supabase HR document generator; docxtemplater engine, contract-first, all PII client-side.</p>
+  </div>
+
+  <h2>Resume Here</h2>
+  <ul>
+    <li><strong>Status:</strong> Phases 0–2 COMPLETE &amp; verified. Working PDPA-safe SG contract generator builds, type-checks, lints, and passes 48/48 tests including an end-to-end render of the real INWW Local Secondment contract.</li>
+    <li><strong>Current phase:</strong> Handoff for review. Phase 3 (OCR) + Phase 4 (letter suite) pending; some blocked on user file drops.</li>
+    <li><strong>Stack:</strong> Next.js 16.2.9 (App Router, TS, Tailwind v4) at repo root; old Python/React archived to <code>legacy/</code>. Engine = docxtemplater + pizzip, client-side only. Supabase auth wired (non-blocking dev mode when env absent).</li>
+    <li><strong>What works:</strong> <code>/</code> template list → <code>/t/sg-local-secondment</code> intake form → fill → generate <code>.docx</code> in-browser → download. SG NRIC checksum, salary-to-words auto-fill, ordinal dates. All PII client-side (INV-1).</li>
+    <li><strong>Validation commands:</strong> <code>npx tsc --noEmit</code> (clean) · <code>npx eslint .</code> (clean) · <code>npx vitest run</code> (48/48) · <code>npx next build</code> (ok — run with sandbox disabled locally due to Turbopack PostCSS worker needing a port).</li>
+    <li><strong>Next actions:</strong> (1) Provision Supabase project + drop <code>NEXT_PUBLIC_SUPABASE_*</code> into <code>.env.local</code> to turn on the auth gate; (2) deploy to Vercel; (3) Phase 3 OCR — port Tesseract from <code>CoWork/Employment Contract</code>; (4) resolve open legal-content questions (see below).</li>
+    <li><strong>Blockers (deferred phases):</strong> MY LC part-timer needs official <code>.docx</code> + MyKad sample (user drop into <code>CoWork/Employment Contract/</code>); <code>.doc</code> templates (Non-Local Secondment, Internal Employee) need Word "Save As .docx" before tokenising.</li>
+    <li><strong>Open legal-content questions (must confirm before production use):</strong> (a) "Dear XXXXXX," — full name or first name? Currently full name. (b) Header "Full Name"/"Address" labels appear blank-for-hand-fill in the source; <code>{address}</code>/header <code>{name}</code> are NOT placed — only the salutation carries the name. Confirm whether name/address should print in the letter header. (c) salary-in-words "and" placement is INWW house style — auto-filled but operator-editable.</li>
+    <li><strong>Protected paths:</strong> <code>legacy/</code> (archived old stack, do not edit) · <code>templates/</code> (gitignored INWW business docs) · <code>CoWork/Employment Contract/</code> (the retained MY build — reference).</li>
+  </ul>
+
+  <h2>Progress Timeline</h2>
+  <p class="timeline-note">Progress is rendered directly in this file from the inline <code>progressEvents</code> array below. Append a new event to that array whenever execution reality changes meaningfully.</p>
+  <div id="progress-timeline" class="timeline"></div>
+
+  <h2>Decisions Outside The Spec</h2>
+  <ul>
+    <li><strong>Engine = docxtemplater named tokens, not highlight-detection.</strong> Discovered the prior MY build (<code>CoWork/Employment Contract/contract-merge.js</code>, 26/26 tests) already proved this path; contracts need computed/validated fields highlights can't give. Old Python highlight engine kept as reference only.</li>
+    <li><strong>Supabase auth is non-blocking when unconfigured.</strong> No credentials available (and no-secrets-in-chat rule), so missing env → open "dev mode" with a banner; gate turns on once <code>NEXT_PUBLIC_SUPABASE_*</code> are set. Lets the app run/verify locally now.</li>
+    <li><strong>salary-in-words is auto-filled but operator-editable.</strong> The legal figure is load-bearing and INWW's "and" placement is house-specific; <code>amountToWords()</code> provides a default, operator verifies.</li>
+    <li><strong>Dropped next/font/google (Geist) for a system font stack.</strong> Removes a build-time network dependency → hermetic builds.</li>
+    <li><strong>NRIC M-series checksum is best-effort</strong> (high confidence S/T/F/G, moderate M); format is always gated. SG NRIC is optional in this template (signature block is hand-signed).</li>
+  </ul>
+
+  <h2>Changes And Tradeoffs</h2>
+  <ul>
+    <li><strong>Rebuild in place:</strong> old <code>backend/</code> + <code>frontend/</code> + Docker/Jenkins moved to <code>legacy/</code> (git history preserved), Next.js scaffolded at root.</li>
+    <li><strong>Tokenisation flattens superscript ordinals.</strong> Dates like "5<sup>th</sup>" were split across runs by superscript formatting; the span tokeniser collapses them — tokens render plain ("5th January 2026"), which matches the merge output anyway.</li>
+    <li><strong>Header name/address not tokenised</strong> (ambiguous blank-for-hand-fill structure) — flagged as an open question rather than guessed, per "don't guess legal content".</li>
+    <li><strong>Blank templates served from <code>public/templates/</code></strong> for the working slice (same-origin, no PII). Supabase Storage is the intended production home (INV-2).</li>
+    <li><strong>next build must run with the sandbox disabled locally</strong> — Turbopack's PostCSS worker binds a port the sandbox blocks. Not a code issue; Vercel is unaffected.</li>
+  </ul>
+
+  <h2>Validation</h2>
+  <ul>
+    <li><strong>tsc:</strong> <code>npx tsc --noEmit</code> → clean.</li>
+    <li><strong>eslint:</strong> <code>npx eslint .</code> → clean (legacy/ ignored).</li>
+    <li><strong>tests:</strong> <code>npx vitest run</code> → 48/48 passing (format, validators, amount-to-words, lc-part-timer, sg-local-secondment unit + end-to-end render).</li>
+    <li><strong>build:</strong> <code>npx next build</code> → success; routes <code>/</code>, <code>/login</code>, <code>/t/[id]</code>, proxy.</li>
+    <li><strong>Tokenisation proof:</strong> rendering the tokenised <code>.docx</code> with the original sample values reproduces the original contract text byte-identically (no content altered, only variable slots).</li>
+    <li><strong>INV-1 (no PII upload):</strong> generate path is <code>fetch(blank template) → docxtemplater → Blob download</code>, entirely client-side. No PII POST exists in the codebase. Live network-tab confirmation pending (Phase 5 audit).</li>
+  </ul>
+
+  <h2>Evidence</h2>
+  <ul>
+    <li>Evidence links are pending. Put large logs, screenshots, or command output in <code>evidence/</code> and link them here.</li>
+  </ul>
+
+  <h2>Next Goal Candidates</h2>
+  <ul>
+    <li>Empty at start.</li>
+  </ul>
+  <script>
+    const progressEvents = [
+      {
+        ts: "2026-06-16T16:43:33Z",
+        status: "created",
+        phase: "start",
+        actor: "agent",
+        summary: "Goal ledger created."
+      },
+      {
+        ts: "2026-06-17T00:50:00Z",
+        status: "done",
+        phase: "P0 scaffold",
+        actor: "agent",
+        summary: "Archived old Python/React/Docker stack to legacy/. Scaffolded Next.js 16.2.9 (App Router, TS, Tailwind v4) in place. Installed docxtemplater, pizzip, @supabase/ssr, vitest. tsc clean."
+      },
+      {
+        ts: "2026-06-17T00:55:00Z",
+        status: "done",
+        phase: "P1 engine",
+        actor: "agent",
+        summary: "Ported tested merge engine to TS (format, validators w/ SG NRIC checksum, amount-to-words, types, registry). docxtemplater render+download module. 41 unit tests passing."
+      },
+      {
+        ts: "2026-06-17T01:05:00Z",
+        status: "done",
+        phase: "P2 tokenise",
+        actor: "agent",
+        summary: "Tokenised the real SG Local Secondment .docx via a cross-run span tokeniser (handles superscript-split dates). All 9 tokens landed. Round-trip proof: rendered-with-sample-values == original text, byte-identical."
+      },
+      {
+        ts: "2026-06-17T01:10:00Z",
+        status: "done",
+        phase: "P2 app",
+        actor: "agent",
+        summary: "Built template-list home, dynamic intake form (client-side generate→download), login + Supabase auth wiring (non-blocking dev mode), AppHeader. SG template module with schema/validate/tokens/fileName."
+      },
+      {
+        ts: "2026-06-17T01:12:00Z",
+        status: "done",
+        phase: "P2 verify",
+        actor: "agent",
+        summary: "Full verification green: tsc clean, eslint clean, next build success, 48/48 tests incl. end-to-end render of the real contract with a fresh employee (no leftover tokens, sample stripped, dates/salary/leave correct). Phases 0-2 complete."
+      }
+    ];
+
+    function escapeHtml(value) {
+      return String(value || "")
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    function renderEvent(event) {
+      const status = escapeHtml(event.status || "event");
+      const phase = escapeHtml(event.phase || "general");
+      const actor = escapeHtml(event.actor || "agent");
+      const timestamp = escapeHtml(event.ts || "");
+      const summary = escapeHtml(event.summary || "");
+      return `
+        <article class="event">
+          <div class="event-head">
+            <span class="badge status-${status}">${status}</span>
+            <span class="phase">${phase}</span>
+            <span class="actor">${actor}</span>
+            <time datetime="${timestamp}">${timestamp}</time>
+          </div>
+          <p class="event-summary">${summary}</p>
+        </article>
+      `;
+    }
+
+    function renderProgressTimeline() {
+      const target = document.getElementById("progress-timeline");
+      const events = Array.isArray(progressEvents) ? progressEvents : [];
+      if (events.length === 0) {
+        target.innerHTML = "<p>No progress events recorded yet.</p>";
+        return;
+      }
+      target.innerHTML = events.map(renderEvent).join("");
+    }
+    renderProgressTimeline();
+  </script>
+</body>
+</html>

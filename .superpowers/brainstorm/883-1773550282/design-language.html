@@ -1,0 +1,110 @@
+<h2>How should the logo inspire the UI?</h2>
+<p class="subtitle">The logo motif: white document + yellow bar. Three ways to carry that into the interface.</p>
+
+<div class="cards">
+
+  <!-- Option A: Yellow as accent only -->
+  <div class="card" data-choice="accent" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:6px 6px 0 0;background:#f9fafb;">
+      <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="18" height="18"><rect x="46" y="30" width="96" height="120" rx="6" ry="6" fill="#FFF" stroke="#1A1A1A" stroke-width="5"/><polygon points="118,30 142,54 118,54" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5" stroke-linejoin="round"/><rect x="46" y="90" width="96" height="22" fill="#FFE033"/><line x1="60" y1="68" x2="124" y2="68" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="80" x2="110" y2="80" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="124" x2="124" y2="124" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="136" x2="100" y2="136" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/></svg>
+        <span style="font-size:12px;font-weight:600;color:#111;">Highlight<span style="color:#ca8a04;">Edit</span></span>
+      </div>
+      <div style="padding:14px;">
+        <!-- Upload card -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:12px;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+          <div style="font-size:9px;color:#9ca3af;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Upload Document</div>
+          <div style="border:1.5px dashed #d1d5db;border-radius:4px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:#9ca3af;">Drop .docx file here</div>
+          </div>
+        </div>
+        <!-- Form field card — yellow focus ring as the only accent -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:10px;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+          <div style="font-size:9px;color:#374151;margin-bottom:4px;font-weight:500;">Recipient Name</div>
+          <div style="border:1.5px solid #FFE033;border-radius:4px;padding:6px 8px;font-size:10px;color:#9ca3af;background:#fffdf0;">Enter value...</div>
+          <div style="margin-top:6px;font-size:9px;color:#374151;margin-bottom:4px;font-weight:500;">Effective Date</div>
+          <div style="border:1.5px solid #e5e7eb;border-radius:4px;padding:6px 8px;font-size:10px;color:#9ca3af;">Enter value...</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Yellow as Accent</h3>
+      <p>Yellow appears only where it means something: active input borders, primary buttons, focused states. Clean and restrained — the logo stays the loudest yellow element.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Yellow bar as structural motif -->
+  <div class="card" data-choice="motif" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:6px 6px 0 0;background:#f9fafb;">
+      <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="18" height="18"><rect x="46" y="30" width="96" height="120" rx="6" ry="6" fill="#FFF" stroke="#1A1A1A" stroke-width="5"/><polygon points="118,30 142,54 118,54" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5" stroke-linejoin="round"/><rect x="46" y="90" width="96" height="22" fill="#FFE033"/><line x1="60" y1="68" x2="124" y2="68" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="80" x2="110" y2="80" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="124" x2="124" y2="124" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="136" x2="100" y2="136" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/></svg>
+        <span style="font-size:12px;font-weight:600;color:#111;">Highlight<span style="color:#ca8a04;">Edit</span></span>
+      </div>
+      <div style="padding:14px;">
+        <!-- Section with yellow left-bar divider -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;margin-bottom:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+          <!-- Yellow bar across top of card — like the logo's highlight bar -->
+          <div style="height:4px;background:#FFE033;width:100%;"></div>
+          <div style="padding:10px 12px;">
+            <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Upload Document</div>
+            <div style="border:1.5px dashed #d1d5db;border-radius:4px;padding:8px;text-align:center;">
+              <div style="font-size:10px;color:#9ca3af;">Drop .docx file here</div>
+            </div>
+          </div>
+        </div>
+        <!-- Form card with yellow top bar -->
+        <div style="background:#fff;border:1px solid #e5e7eb;border-radius:6px;overflow:hidden;box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+          <div style="height:4px;background:#FFE033;width:100%;"></div>
+          <div style="padding:10px 12px;">
+            <div style="font-size:9px;color:#9ca3af;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px;">Form Fields (2)</div>
+            <div style="font-size:9px;color:#374151;margin-bottom:3px;font-weight:500;">Recipient Name</div>
+            <div style="border:1px solid #e5e7eb;border-radius:3px;padding:5px 7px;font-size:10px;color:#9ca3af;margin-bottom:6px;">Enter value...</div>
+            <div style="font-size:9px;color:#374151;margin-bottom:3px;font-weight:500;">Effective Date</div>
+            <div style="border:1px solid #e5e7eb;border-radius:3px;padding:5px 7px;font-size:10px;color:#9ca3af;">Enter value...</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Yellow Bar as Motif</h3>
+      <p>A thin yellow bar crowns every card/section — echoing the highlight crossing the document in the logo. The UI literally looks like the logo at large scale. Distinctive and ownable.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Document cards -->
+  <div class="card" data-choice="document" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:0;overflow:hidden;border-radius:6px 6px 0 0;background:#f0f0f0;">
+      <div style="background:#fff;border-bottom:1px solid #e5e7eb;padding:8px 14px;display:flex;align-items:center;gap:8px;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="18" height="18"><rect x="46" y="30" width="96" height="120" rx="6" ry="6" fill="#FFF" stroke="#1A1A1A" stroke-width="5"/><polygon points="118,30 142,54 118,54" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5" stroke-linejoin="round"/><rect x="46" y="90" width="96" height="22" fill="#FFE033"/><line x1="60" y1="68" x2="124" y2="68" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="80" x2="110" y2="80" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="124" x2="124" y2="124" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/><line x1="60" y1="136" x2="100" y2="136" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/></svg>
+        <span style="font-size:12px;font-weight:600;color:#111;">Highlight<span style="color:#ca8a04;">Edit</span></span>
+      </div>
+      <div style="padding:14px;background:#efefef;">
+        <!-- Two-panel: left document preview, right form -->
+        <div style="display:flex;gap:8px;">
+          <!-- Mini document with highlight -->
+          <div style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:8px;width:45%;box-shadow:2px 2px 6px rgba(0,0,0,0.08);">
+            <div style="height:3px;background:#e5e7eb;border-radius:1px;width:80%;margin-bottom:3px;"></div>
+            <div style="height:3px;background:#e5e7eb;border-radius:1px;width:60%;margin-bottom:3px;"></div>
+            <div style="height:8px;background:#FFE033;border-radius:1px;width:100%;margin-bottom:3px;opacity:0.8;"></div>
+            <div style="height:3px;background:#e5e7eb;border-radius:1px;width:90%;margin-bottom:3px;"></div>
+            <div style="height:3px;background:#e5e7eb;border-radius:1px;width:70%;"></div>
+          </div>
+          <!-- Form panel -->
+          <div style="background:#fff;border:1px solid #ddd;border-radius:4px;padding:8px;flex:1;box-shadow:2px 2px 6px rgba(0,0,0,0.08);">
+            <div style="font-size:8px;color:#9ca3af;margin-bottom:4px;">FILL IN FIELDS</div>
+            <div style="border:1px solid #e5e7eb;border-radius:2px;padding:4px 5px;font-size:8px;color:#9ca3af;margin-bottom:4px;">Name...</div>
+            <div style="border:1px solid #e5e7eb;border-radius:2px;padding:4px 5px;font-size:8px;color:#9ca3af;margin-bottom:4px;">Date...</div>
+            <div style="background:#1a1a1a;border-radius:2px;padding:4px 6px;font-size:8px;color:#FFE033;text-align:center;margin-top:4px;">Export</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Document-First Layout</h3>
+      <p>The app mirrors the document itself: a paper-like surface on a neutral background, side-by-side document preview + form. The UI <em>is</em> the document experience.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">My recommendation: <strong>B — Yellow Bar as Motif</strong>. It creates a visual language that's uniquely HighlightEdit — every card echoes the logo. Consistent, memorable, and clearly purposeful for your audience.</p>

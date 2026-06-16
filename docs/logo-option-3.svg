@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="200" height="200">
+  <!-- Option 3: "The Lettermark" — the H where the crossbar IS the highlight -->
+
+  <!-- Left vertical stem of H -->
+  <rect x="38" y="38" width="22" height="124" rx="4" ry="4" fill="#1A1A1A"/>
+
+  <!-- Right vertical stem of H -->
+  <rect x="140" y="38" width="22" height="124" rx="4" ry="4" fill="#1A1A1A"/>
+
+  <!-- The crossbar — a yellow highlight stroke, slightly proud of the stems -->
+  <rect x="30" y="88" width="140" height="26" rx="4" ry="4" fill="#FFE033"/>
+
+  <!-- Edit cursor — a thin vertical bar to the right, implying an active text field -->
+  <rect x="174" y="80" width="5" height="42" rx="2" ry="2" fill="#1A1A1A" opacity="0.75"/>
+</svg>

@@ -1,0 +1,93 @@
+<h2>Watermark style for free exports</h2>
+<p class="subtitle">How should the logo appear on documents exported by free-tier users?</p>
+
+<div class="cards">
+
+  <!-- Option A: Diagonal text watermark -->
+  <div class="card" data-choice="diagonal" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#f9fafb;">
+      <!-- Document mockup -->
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:20px 18px;position:relative;overflow:hidden;min-height:140px;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+        <!-- Document content lines -->
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:85%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:70%;margin-bottom:6px;"></div>
+        <div style="height:14px;background:#FFF9C4;border-radius:2px;width:100%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:90%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:60%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:80%;"></div>
+        <!-- Diagonal watermark -->
+        <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) rotate(-35deg);font-size:18px;font-weight:700;color:rgba(0,0,0,0.08);letter-spacing:2px;white-space:nowrap;pointer-events:none;user-select:none;">HighlightEdit</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>A — Diagonal Text</h3>
+      <p>Classic watermark pattern. "HighlightEdit" rotated across the page at low opacity. Familiar, hard to miss, and clearly an incentive to upgrade. Used by DocuSign, HelloSign.</p>
+    </div>
+  </div>
+
+  <!-- Option B: Footer stamp -->
+  <div class="card" data-choice="footer" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#f9fafb;">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:4px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+        <div style="padding:18px 18px 10px;">
+          <div style="height:5px;background:#e5e7eb;border-radius:2px;width:85%;margin-bottom:6px;"></div>
+          <div style="height:5px;background:#e5e7eb;border-radius:2px;width:70%;margin-bottom:6px;"></div>
+          <div style="height:14px;background:#FFF9C4;border-radius:2px;width:100%;margin-bottom:6px;"></div>
+          <div style="height:5px;background:#e5e7eb;border-radius:2px;width:90%;margin-bottom:6px;"></div>
+          <div style="height:5px;background:#e5e7eb;border-radius:2px;width:60%;"></div>
+        </div>
+        <!-- Footer bar -->
+        <div style="border-top:1px solid #e5e7eb;padding:6px 12px;display:flex;align-items:center;gap:6px;background:#fafafa;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="14" height="14">
+            <rect x="46" y="30" width="96" height="120" rx="6" ry="6" fill="#FFF" stroke="#1A1A1A" stroke-width="5"/>
+            <polygon points="118,30 142,54 118,54" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5" stroke-linejoin="round"/>
+            <rect x="46" y="90" width="96" height="22" fill="#FFE033"/>
+            <line x1="60" y1="68" x2="124" y2="68" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="80" x2="110" y2="80" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="124" x2="124" y2="124" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="136" x2="100" y2="136" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span style="font-size:9px;color:#9ca3af;">Created with <strong style="color:#374151;">HighlightEdit</strong> · Free Plan · highlightedit.com</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>B — Footer Stamp</h3>
+      <p>A thin branded footer bar on every page — logo + "Created with HighlightEdit · Free Plan". Non-intrusive, keeps the document readable. Also works as passive marketing when shared.</p>
+    </div>
+  </div>
+
+  <!-- Option C: Corner logo mark -->
+  <div class="card" data-choice="corner" onclick="toggleSelect(this)">
+    <div class="card-image" style="padding:12px;background:#f9fafb;">
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:4px;padding:18px;position:relative;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.08);">
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:85%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:70%;margin-bottom:6px;"></div>
+        <div style="height:14px;background:#FFF9C4;border-radius:2px;width:100%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:90%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:60%;margin-bottom:6px;"></div>
+        <div style="height:5px;background:#e5e7eb;border-radius:2px;width:75%;"></div>
+        <!-- Corner stamp -->
+        <div style="position:absolute;bottom:10px;right:10px;display:flex;align-items:center;gap:4px;opacity:0.45;">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="16" height="16">
+            <rect x="46" y="30" width="96" height="120" rx="6" ry="6" fill="#FFF" stroke="#1A1A1A" stroke-width="5"/>
+            <polygon points="118,30 142,54 118,54" fill="#F0F0F0" stroke="#1A1A1A" stroke-width="5" stroke-linejoin="round"/>
+            <rect x="46" y="90" width="96" height="22" fill="#FFE033"/>
+            <line x1="60" y1="68" x2="124" y2="68" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="80" x2="110" y2="80" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="124" x2="124" y2="124" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+            <line x1="60" y1="136" x2="100" y2="136" stroke="#C8C8C8" stroke-width="4" stroke-linecap="round"/>
+          </svg>
+          <span style="font-size:9px;color:#374151;font-weight:600;">HighlightEdit</span>
+        </div>
+      </div>
+    </div>
+    <div class="card-body">
+      <h3>C — Corner Mark</h3>
+      <p>Small logo + name in the bottom-right corner at low opacity. The most subtle option — barely noticeable on screen but present on print. Least friction for free users, least conversion pressure.</p>
+    </div>
+  </div>
+
+</div>
+
+<p class="subtitle" style="margin-top:24px;">My recommendation: <strong>B — Footer Stamp</strong>. It's professional-looking (not defacing the document like a diagonal mark), stays out of the content area, and works as organic marketing when HR/Legal teams share documents with each other.</p>
