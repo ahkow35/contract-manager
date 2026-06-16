@@ -54,3 +54,10 @@ legacy/
 /public/ocr/*.wasm
 /public/ocr/worker.min.js
 /public/ocr/lang/
+
+# local secrets (never commit)
+*.secret
+
+# supabase CLI local state
+supabase/.temp
+supabase/.branches

@@ -1,0 +1,7 @@
+# Don't upload the archived old stack or local-only working files to Vercel.
+legacy/
+/templates/
+.agent/
+tasks/
+docs/
+*.secret
