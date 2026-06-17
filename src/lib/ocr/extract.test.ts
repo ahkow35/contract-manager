@@ -24,6 +24,27 @@ describe('extractIdNumber', () => {
   it('no match -> undefined', () => expect(extractIdNumber('no id here', 'SG')).toBeUndefined());
 });
 
+describe('SG NRIC realistic layouts', () => {
+  it('name on its own line between Name and Race labels', () => {
+    const r = extractFromOcrText(
+      'REPUBLIC OF SINGAPORE\nIDENTITY CARD No.\nS1234567D\nName\nTAN AH KOW\nRace\nCHINESE\nDate of birth\n01-01-1985\nSex\nM',
+      'SG',
+    );
+    expect(r.nric).toBe('S1234567D');
+    expect(r.name).toBe('TAN AH KOW');
+  });
+
+  it('does not mistake the header for the name', () => {
+    const r = extractFromOcrText('REPUBLIC OF SINGAPORE\nS7654321J\nName\nLEE WEI MING\nRace\nCHINESE', 'SG');
+    expect(r.name).toBe('LEE WEI MING');
+  });
+
+  it('inline "Name: value" with mixed case', () => {
+    const r = extractFromOcrText('S1234567D\nName: Tan Ah Kow\nRace: Chinese', 'SG');
+    expect(r.name).toBe('Tan Ah Kow');
+  });
+});
+
 describe('extractFromOcrText', () => {
   it('SG: nric + name', () => {
     const r = extractFromOcrText(SG_CARD, 'SG');

@@ -21,8 +21,20 @@ const ADDR_LABEL = /\b(address|alamat)\b\s*[:.]?\s*(.*)$/i;
 const HEADER_WORDS =
   /\b(republic|singapore|identity|card|no|nric|fin|malaysia|kad|pengenalan|mykad|warganegara|race|bangsa|sex|jantina|date|birth|tarikh|lahir|country|negara|address|alamat|name|nama|valid|expiry)\b/i;
 
+// Field labels that follow the name on an ID card — used to bound the name region.
+const STOP_LABEL =
+  /\b(race|bangsa|sex|jantina|date|tarikh|birth|lahir|country|negara|place|nationality|kewarganegaraan|address|alamat|blood)\b/i;
+
 function cleanLines(text: string): string[] {
   return text.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+}
+
+/** Permissive: a line that could be (part of) a name — has letters, isn't a number blob. */
+function plausibleNameContent(line: string): boolean {
+  const t = line.trim();
+  if (!t || t.length > 60) return false;
+  if (/\d{3,}/.test(t)) return false;
+  return t.replace(/[^A-Za-z]/g, '').length >= 3;
 }
 
 /** A printed personal name: mostly-letters, no digits, not card chrome, plausibly capitalised. */
@@ -56,20 +68,19 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
   out.nric = extractIdNumber(text, jurisdiction);
   const nricLine = out.nric ? lines.findIndex((l) => l.toUpperCase().includes(out.nric!)) : -1;
 
-  // Name — strategy 1: an explicit "Name:/Nama:" label (value inline or on the next line).
-  for (let i = 0; i < lines.length; i++) {
-    const m = lines[i].match(NAME_LABEL);
-    if (!m) continue;
-    const inline = m[2].trim();
-    if (inline && !HEADER_WORDS.test(inline)) {
-      out.name = inline.replace(/\s+/g, ' ');
-      break;
+  // Name — strategy 1 (most reliable for ID cards): the value(s) between the "Name/Nama" label and
+  // the next field label (Race, Date of birth, Sex…). Permissive about the name's own formatting.
+  const nameLabelIdx = lines.findIndex((l) => NAME_LABEL.test(l) && !STOP_LABEL.test(l));
+  if (nameLabelIdx >= 0) {
+    const collected: string[] = [];
+    const inline = lines[nameLabelIdx].replace(/^.*?\b(?:name|nama)\b\s*[:.]?\s*/i, '').trim();
+    if (inline && plausibleNameContent(inline) && !HEADER_WORDS.test(inline)) collected.push(inline);
+    for (let i = nameLabelIdx + 1; i < lines.length && collected.length < 3; i++) {
+      if (STOP_LABEL.test(lines[i])) break;
+      if (plausibleNameContent(lines[i]) && !HEADER_WORDS.test(lines[i])) collected.push(lines[i].trim());
+      else if (collected.length) break;
     }
-    const next = lines[i + 1]?.trim();
-    if (next && looksLikeName(next)) {
-      out.name = next.replace(/\s+/g, ' ');
-      break;
-    }
+    if (collected.length) out.name = collected.join(' ').replace(/\s+/g, ' ');
   }
   // Strategy 2: first name-shaped line — searching AFTER the NRIC first (names sit near the number).
   if (!out.name) {
