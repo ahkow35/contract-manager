@@ -91,15 +91,18 @@
 
   <h2>Resume Here</h2>
   <ul>
-    <li><strong>Status:</strong> Phases 0–2 COMPLETE &amp; verified; Phase 3 (OCR) CODE COMPLETE (live accuracy blocked on a sample card). Builds, type-checks, lints, 55/55 tests. Runtime smoke test passed (prod server, all routes 200, blank template served same-origin).</li>
-    <li><strong>Current phase:</strong> Phase 3 OCR built (extraction unit-tested; live WASM recognition needs a real card + browser). Phase 4 (letter suite) + Phase 5 (audit/deploy) pending; several items blocked on user file drops.</li>
-    <li><strong>OCR (Phase 3):</strong> Tesseract.js 7, engine files staged SAME-ORIGIN under <code>public/ocr/</code> via <code>scripts/setup-ocr.mjs</code> (wired as <code>prebuild</code>; assets gitignored + regenerated). <code>src/lib/ocr/</code> = extraction (SG NRIC + MY MyKad + name/address) + client recognizer; <code>OcrPanel</code> integrated into the form with operator-verify. INV-4 same-origin by construction (no CDN).</li>
-    <li><strong>Stack:</strong> Next.js 16.2.9 (App Router, TS, Tailwind v4) at repo root; old Python/React archived to <code>legacy/</code>. Engine = docxtemplater + pizzip, client-side only. Supabase auth wired (non-blocking dev mode when env absent).</li>
-    <li><strong>What works:</strong> <code>/</code> template list → <code>/t/sg-local-secondment</code> intake form → fill → generate <code>.docx</code> in-browser → download. SG NRIC checksum, salary-to-words auto-fill, ordinal dates. All PII client-side (INV-1).</li>
-    <li><strong>Validation commands:</strong> <code>npx tsc --noEmit</code> (clean) · <code>npx eslint .</code> (clean) · <code>npx vitest run</code> (48/48) · <code>npx next build</code> (ok — run with sandbox disabled locally due to Turbopack PostCSS worker needing a port).</li>
-    <li><strong>Next actions:</strong> (1) Provision Supabase project + drop <code>NEXT_PUBLIC_SUPABASE_*</code> into <code>.env.local</code> to turn on the auth gate; (2) deploy to Vercel; (3) Phase 3 OCR — port Tesseract from <code>CoWork/Employment Contract</code>; (4) resolve open legal-content questions (see below).</li>
-    <li><strong>Blockers (deferred phases):</strong> MY LC part-timer needs official <code>.docx</code> + MyKad sample (user drop into <code>CoWork/Employment Contract/</code>); <code>.doc</code> templates (Non-Local Secondment, Internal Employee) need Word "Save As .docx" before tokenising.</li>
-    <li><strong>Open legal-content questions (must confirm before production use):</strong> (a) "Dear XXXXXX," — full name or first name? Currently full name. (b) Header "Full Name"/"Address" labels appear blank-for-hand-fill in the source; <code>{address}</code>/header <code>{name}</code> are NOT placed — only the salutation carries the name. Confirm whether name/address should print in the letter header. (c) salary-in-words "and" placement is INWW house style — auto-filled but operator-editable.</li>
+    <li><strong>Status:</strong> Phases 0–3 + 5–8 COMPLETE. OCR fixed (PDF support added, headless Chromium verified). Admin/staff role tier live. Password reset flow built. Deployed to Vercel. OUTSTANDING: Supabase Auth URL config (dashboard task — see below).</li>
+    <li><strong>Completed phases:</strong> P0 scaffold · P1 engine · P2 SG contract E2E · P3 OCR (code complete + live-verified) · P5 deploy · P6 OCR fix + PDF · P7 admin tier · P8 password reset. Pending: P4 letter suite (blocked on file drops), P5 PDPA audit sign-off.</li>
+    <li><strong>OCR (fixed — Phase 6):</strong> Root cause: <code>setup-ocr.mjs</code> copied bare <code>.wasm</code> binaries but omitted the Tesseract.js v7 <code>.wasm.js</code> wrapper files (e.g. <code>tesseract-core-simd-lstm.wasm.js</code>); workers 404'd silently. Fix: copy full <code>tesseract-core*</code> fileset. PDF support: file input accepts <code>image/*</code> + <code>application/pdf</code>; PDFs rasterised via pdf.js same-origin worker (<code>src/lib/ocr/pdf.ts</code>) before OCR. E2E verified in headless Chromium (image + PDF → NRIC <code>S1234567D</code>, 0 off-origin requests). INV-4 maintained.</li>
+    <li><strong>Admin / staff roles (Phase 7):</strong> Roles in Supabase <code>app_metadata.role</code> (<code>'admin' | 'staff'</code>), service-role only. Server-only client: <code>src/lib/supabase/admin.ts</code>. Admin API: <code>GET/POST /api/admin/users</code>, <code>PATCH/DELETE /api/admin/users/[id]</code>, <code>GET /api/admin/usage</code>; <code>/api/usage</code> logs generation events. Admin UI at <code>/admin</code>. Usage dashboard counts only (template + user + timestamp; no PII). <code>nyan@withkinna.com</code> = admin.</li>
+    <li><strong>Password reset (Phase 8):</strong> <code>/forgot-password</code> → Supabase email → <code>/reset-password</code> PKCE exchange → <code>updateUser</code>. "Forgot password?" on <code>/login</code>. Both routes public in middleware.</li>
+    <li><strong>OUTSTANDING — Supabase Auth URL config (dashboard task):</strong> Set in Supabase dashboard → Authentication → URL Configuration: <strong>Site URL</strong> = <code>https://contract-manager-ahkow35s-projects.vercel.app</code>; <strong>Redirect URLs</strong> = <code>https://contract-manager-ahkow35s-projects.vercel.app/**</code> and <code>http://localhost:3000/**</code>. Without this, reset email links won't redirect correctly. (CLI OAuth session token rejected by Management API — 30-second dashboard task.)</li>
+    <li><strong>Stack:</strong> Next.js 16.2.9 (App Router, TS, Tailwind v4) on Vercel. Supabase project "Contract Manager" (Singapore, ref wxwgvjcqbljrktrfikif). Engine = docxtemplater + pizzip, client-side only.</li>
+    <li><strong>What works:</strong> <code>/</code> template list → <code>/t/sg-local-secondment</code> intake form → fill → generate <code>.docx</code> → download. ID-card OCR (image + PDF). Admin panel (user management + usage dashboard). Password reset. All PII client-side (INV-1).</li>
+    <li><strong>Validation commands:</strong> <code>npx tsc --noEmit</code> (clean) · <code>npx eslint .</code> (clean) · <code>npx vitest run</code> (55/55) · <code>npx next build</code> (ok — run with sandbox disabled locally due to Turbopack PostCSS worker needing a port).</li>
+    <li><strong>Next actions:</strong> (1) Set Supabase Auth URL config (dashboard, 30 s); (2) Phase 4 — letter suite (blocked on <code>.doc</code>→<code>.docx</code> conversions + MY files); (3) Phase 5 PDPA audit sign-off.</li>
+    <li><strong>Blockers (deferred phases):</strong> MY LC part-timer needs official <code>.docx</code> + MyKad sample; <code>.doc</code> templates (Non-Local Secondment, Internal Employee) need Word "Save As .docx".</li>
+    <li><strong>Open legal-content questions (must confirm before production use):</strong> (a) "Dear XXXXXX," — full name or first name? Currently full name. (b) Header name/address not tokenised (ambiguous blank-for-hand-fill) — flagged, not guessed. (c) salary-in-words "and" = INWW house style — auto-filled but operator-editable.</li>
     <li><strong>Protected paths:</strong> <code>legacy/</code> (archived old stack, do not edit) · <code>templates/</code> (gitignored INWW business docs) · <code>CoWork/Employment Contract/</code> (the retained MY build — reference).</li>
   </ul>
 
@@ -114,6 +117,9 @@
     <li><strong>salary-in-words is auto-filled but operator-editable.</strong> The legal figure is load-bearing and INWW's "and" placement is house-specific; <code>amountToWords()</code> provides a default, operator verifies.</li>
     <li><strong>Dropped next/font/google (Geist) for a system font stack.</strong> Removes a build-time network dependency → hermetic builds.</li>
     <li><strong>NRIC M-series checksum is best-effort</strong> (high confidence S/T/F/G, moderate M); format is always gated. SG NRIC is optional in this template (signature block is hand-signed).</li>
+    <li><strong>Roles stored in <code>app_metadata</code>, not a separate DB table.</strong> Supabase <code>app_metadata</code> is writable only by the service-role key (never from the browser JWT); no additional RLS complexity needed. Chose over a separate <code>user_roles</code> table to keep the role authoritative and unspoofable.</li>
+    <li><strong>Usage dashboard records no PII beyond user ID/email + template ID + timestamp.</strong> Counts only, no document field values — satisfies INV-2 and keeps the usage_events table out of PDPA scope. RLS on usage_events: service_role only; clients cannot read each other's events.</li>
+    <li><strong>Supabase Auth URL config left as a dashboard task.</strong> The CLI OAuth session token is stored chunked in macOS keychain and is rejected by the Management API. Attempting automation would require re-authenticating or injecting the service-role key differently; the dashboard path is a 30-second fix and the safer option.</li>
   </ul>
 
   <h2>Changes And Tradeoffs</h2>
@@ -129,10 +135,12 @@
   <ul>
     <li><strong>tsc:</strong> <code>npx tsc --noEmit</code> → clean.</li>
     <li><strong>eslint:</strong> <code>npx eslint .</code> → clean (legacy/ ignored).</li>
-    <li><strong>tests:</strong> <code>npx vitest run</code> → 48/48 passing (format, validators, amount-to-words, lc-part-timer, sg-local-secondment unit + end-to-end render).</li>
-    <li><strong>build:</strong> <code>npx next build</code> → success; routes <code>/</code>, <code>/login</code>, <code>/t/[id]</code>, proxy.</li>
+    <li><strong>tests:</strong> <code>npx vitest run</code> → 55/55 passing (format, validators, amount-to-words, lc-part-timer, sg-local-secondment unit + end-to-end render, OCR extraction).</li>
+    <li><strong>build:</strong> <code>npx next build</code> → success; routes <code>/</code>, <code>/login</code>, <code>/forgot-password</code>, <code>/reset-password</code>, <code>/t/[id]</code>, <code>/admin</code>, proxy.</li>
     <li><strong>Tokenisation proof:</strong> rendering the tokenised <code>.docx</code> with the original sample values reproduces the original contract text byte-identically (no content altered, only variable slots).</li>
+    <li><strong>OCR E2E (headless Chromium):</strong> canvas image and a generated PDF both extracted NRIC <code>S1234567D</code> correctly; browser network tab confirmed 0 off-origin requests (all OCR assets same-origin). INV-4 verified.</li>
     <li><strong>INV-1 (no PII upload):</strong> generate path is <code>fetch(blank template) → docxtemplater → Blob download</code>, entirely client-side. No PII POST exists in the codebase. Live network-tab confirmation pending (Phase 5 audit).</li>
+    <li><strong>Admin role enforcement:</strong> <code>/api/admin/*</code> routes check <code>app_metadata.role === 'admin'</code> server-side on every request; non-admins receive 403. Self-lockout guard prevents an admin from demoting/removing themselves.</li>
   </ul>
 
   <h2>Evidence</h2>
@@ -208,6 +216,34 @@
         phase: "P5 deploy",
         actor: "agent",
         summary: "Created + linked Supabase project 'Contract Manager' (Lead Gen org, ref wxwgvjcqbljrktrfikif, Singapore) and Vercel project ahkow35s-projects/contract-manager (GitHub connected). Env set prod+dev. Fixed cloud build (tsconfig excludes legacy/; root-anchored .vercelignore). DEPLOYED: https://contract-manager-olive.vercel.app — auth gate verified (/ →307 /login, /login renders Supabase sign-in). Preview env unset (CLI v54 branch quirk). NEXT: create a staff user in Supabase Auth to log in."
+      },
+      {
+        ts: "2026-06-17T03:00:00Z",
+        status: "done",
+        phase: "P6 OCR fix + PDF",
+        actor: "agent",
+        summary: "Root cause of OCR failure found: setup-ocr.mjs copied bare .wasm binaries but omitted the Tesseract.js v7 .wasm.js wrapper files (e.g. tesseract-core-simd-lstm.wasm.js); workers 404'd silently. Fix: copy full tesseract-core* fileset. PDF support added: file input accepts image/* and application/pdf; PDFs rasterised (first page, 2x scale) via pdf.js same-origin worker (src/lib/ocr/pdf.ts) before OCR. E2E verified in headless Chromium: canvas image + generated PDF both read NRIC S1234567D via same-origin assets, 0 off-origin requests. INV-4 maintained."
+      },
+      {
+        ts: "2026-06-17T03:30:00Z",
+        status: "done",
+        phase: "P7 admin tier",
+        actor: "agent",
+        summary: "Admin/staff role tier built. Roles in Supabase app_metadata.role ('admin'|'staff'), service-role only. Server-only admin client: src/lib/supabase/admin.ts. Admin API routes: GET/POST /api/admin/users (list/create), PATCH/DELETE /api/admin/users/[id] (set role/remove, self-lockout guard), GET /api/admin/usage (aggregate counts). /api/usage logs generation events for any authed user. Admin UI at /admin: user management + usage dashboard. Usage dashboard is PDPA-safe: usage_events table records only template ID + user ID/email + timestamp, never document field values. RLS locked; service_role only. Migration: supabase/migrations/20260617000000_create_usage_events.sql. nyan@withkinna.com granted admin role."
+      },
+      {
+        ts: "2026-06-17T04:00:00Z",
+        status: "done",
+        phase: "P8 password reset",
+        actor: "agent",
+        summary: "Password reset flow: /forgot-password (sends Supabase reset email) → /reset-password (PKCE code exchange → updateUser). 'Forgot password?' link on /login. Both routes marked public in middleware. OUTSTANDING: Supabase Auth URL config must be set in dashboard (Site URL + redirect allowlist) before reset email links redirect correctly — CLI OAuth session token rejected by Management API; left as 30-second dashboard task."
+      },
+      {
+        ts: "2026-06-17T04:05:00Z",
+        status: "blocked",
+        phase: "Supabase Auth URL",
+        actor: "user",
+        summary: "MANUAL STEP REQUIRED: Supabase dashboard → Authentication → URL Configuration. Site URL = https://contract-manager-ahkow35s-projects.vercel.app. Redirect URLs: https://contract-manager-ahkow35s-projects.vercel.app/** and http://localhost:3000/**. Until done, password-reset links won't redirect correctly."
       }
     ];
 

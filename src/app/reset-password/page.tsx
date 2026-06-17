@@ -23,8 +23,9 @@ export default function ResetPassword() {
         setPhase(error ? 'invalid' : 'ready');
         return;
       }
-      const { data } = await supabase.auth.getSession();
-      setPhase(data.session ? 'ready' : 'invalid');
+      // Server-verified (not getSession, which trusts local storage) before allowing a password change.
+      const { data } = await supabase.auth.getUser();
+      setPhase(data.user ? 'ready' : 'invalid');
     })();
   }, []);
 

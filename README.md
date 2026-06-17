@@ -12,8 +12,8 @@ contracts, HR letters), fill an on-page form, and download a finished `.docx` �
 
 - **Next.js 16** (App Router, TypeScript, Tailwind v4) on **Vercel**
 - **docxtemplater + pizzip** — in-browser `.docx` merge (no server processing of PII)
-- **Supabase** — staff email/password auth only (never stores PII); blank templates in Storage
-- **Tesseract.js** — on-device ID-card OCR (Phase 3)
+- **Supabase** — staff email/password auth; role management via `app_metadata`; blank templates in Storage
+- **Tesseract.js + pdf.js** — on-device ID-card OCR (images and PDFs, same-origin assets)
 
 ## PDPA invariants (the spec)
 
@@ -27,7 +27,7 @@ npm install
 cp .env.example .env.local   # leave blank for open dev mode, or add Supabase keys to enable auth
 npm run dev                  # http://localhost:3000
 npm run build                # production build
-npx vitest run               # 48 tests (engine, validators, end-to-end render)
+npx vitest run               # 55 tests (engine, validators, end-to-end render, OCR extraction)
 ```
 
 ## How a template works
@@ -37,7 +37,33 @@ Each document is a `TemplateDef` in `src/lib/merge/templates/` tying a tokenised
 Add new contracts/letters by tokenising the blank `.docx` and registering it in
 `src/lib/merge/registry.ts`. Live template: **SG Local Secondment Employment Contract**.
 
+## Admin roles and user management
+
+Two roles exist: `admin` and `staff`. Roles are stored in Supabase `app_metadata.role` and are
+settable server-side only (service-role key — never from the browser). The initial admin is
+`nyan@withkinna.com`.
+
+- **Admin panel:** `/admin` — visible to admins only (link in header). Provides user management
+  (add/remove staff, promote/demote sub-admins) and a usage dashboard.
+- **Usage dashboard:** all-time / last 30 days / last 7 days generation counts, broken down by
+  template and by user. PDPA-safe: the `usage_events` table stores only template ID, user
+  ID/email, and timestamp — never document field values or employee PII. RLS ensures only the
+  server (service-role) can read or write it.
+- **API routes:** `GET/POST /api/admin/users`, `PATCH/DELETE /api/admin/users/[id]`,
+  `GET /api/admin/usage`. All 403 for non-admins. Self-lockout guard on role/delete operations.
+
+## Password reset
+
+- Visit `/forgot-password` → enter email → Supabase sends a reset link.
+- The link redirects to `/reset-password` which performs a PKCE code exchange and calls `updateUser`.
+- "Forgot password?" link is shown on `/login`.
+
+> **Supabase Auth URL config required:** The Supabase dashboard must have the Site URL and redirect
+> allowlist configured before reset links work in production. See `tasks/todo.md` — Phase 8 for
+> the exact values.
+
 ## Status
 
-Phases 0–2 complete (scaffold, engine, SG contract end-to-end). Pending: Supabase keys + Vercel
-deploy, Phase 3 OCR, Phase 4 letter suite, Phase 5 PDPA audit. See `tasks/todo.md`.
+Phases 0–3 and 5–8 complete (scaffold, engine, SG contract E2E, OCR fixed + PDF, deployed,
+admin tier, password reset). Pending: Phase 4 letter suite (blocked on file drops), Phase 5 PDPA
+audit sign-off, Supabase Auth URL config (30-second dashboard task). See `tasks/todo.md`.

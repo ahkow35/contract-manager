@@ -16,6 +16,8 @@ const eslintConfig = defineConfig([
     "legacy/**",
     // Vendored OCR engine assets (Tesseract worker/wasm/lang) — not our source.
     "public/ocr/**",
+    // Node utility + test scripts (build helpers, E2E harness) — not app source.
+    "scripts/**",
   ]),
 ]);
 

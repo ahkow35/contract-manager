@@ -34,6 +34,14 @@ export async function middleware(request: NextRequest) {
     url.pathname = '/login';
     return NextResponse.redirect(url);
   }
+
+  // Defense-in-depth: gate the /admin area by role at the edge too (the API routes + layout also
+  // enforce this, but this stops a non-admin page render even if a layout check were ever bypassed).
+  if (data.user && path.startsWith('/admin') && data.user.app_metadata?.role !== 'admin') {
+    const url = request.nextUrl.clone();
+    url.pathname = '/';
+    return NextResponse.redirect(url);
+  }
   return response;
 }
 
