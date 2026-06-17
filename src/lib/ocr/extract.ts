@@ -19,7 +19,7 @@ const ADDR_LABEL = /\b(address|alamat)\b\s*[:.]?\s*(.*)$/i;
 
 // Words that appear on ID-card chrome (labels/headers), not in a person's name.
 const HEADER_WORDS =
-  /\b(republic|singapore|identity|card|no|nric|fin|malaysia|kad|pengenalan|mykad|warganegara|race|bangsa|sex|jantina|date|birth|tarikh|lahir|country|negara|address|alamat|name|nama|valid|expiry)\b/i;
+  /\b(republic|singapore|identity|card|cardno|nric|fin|malaysia|kad|pengenalan|mykad|warganegara|race|bangsa|sex|jantina|date|tarikh|birth|lahir|country|negara|place|nationality|kewarganegaraan|address|alamat|valid|expiry|blood)\b/i;
 
 // Field labels that follow the name on an ID card — used to bound the name region.
 const STOP_LABEL =
@@ -37,17 +37,27 @@ function plausibleNameContent(line: string): boolean {
   return t.replace(/[^A-Za-z]/g, '').length >= 3;
 }
 
-/** A printed personal name: mostly-letters, no digits, not card chrome, plausibly capitalised. */
-function looksLikeName(line: string): boolean {
-  const t = line.trim();
-  if (t.length < 3 || t.length > 60) return false;
-  if (/\d/.test(t)) return false;
-  if (HEADER_WORDS.test(t)) return false;
-  if (!/^[A-Za-z][A-Za-z\s.,'@/-]+$/.test(t)) return false;
-  const letters = t.replace(/[^A-Za-z]/g, '');
-  if (letters.length < 3) return false;
-  const upper = t.replace(/[^A-Z]/g, '').length;
-  return upper / letters.length >= 0.6; // IC names are mostly upper-case
+/** Strip OCR noise (digits, symbols, brackets) → just the letters/spaces of a potential name. */
+function nameCore(line: string): string {
+  return line.replace(/[^A-Za-z\s.'/-]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+/** Score a line by how much it looks like a printed personal name (0 = not a name). */
+function nameScore(line: string): number {
+  const core = nameCore(line);
+  if (core.length < 3 || core.length > 60) return 0;
+  if (HEADER_WORDS.test(core)) return 0;
+  const letters = core.replace(/[^A-Za-z]/g, '').length;
+  if (letters < 3) return 0;
+  // Reject noisy lines (lots of symbols/digits relative to letters) — that's card chrome, not a name.
+  const nonSpace = line.replace(/\s/g, '').length;
+  const nonLetter = line.replace(/[A-Za-z\s]/g, '').length;
+  if (nonSpace > 0 && nonLetter / nonSpace > 0.35) return 0;
+  const words = core.split(/\s+/).filter((w) => /^[A-Za-z]{2,}$/.test(w));
+  if (words.length < 2 || words.length > 5) return 0;
+  const upper = core.replace(/[^A-Z]/g, '').length;
+  if (upper / letters < 0.5) return 0; // IC names are mostly upper-case
+  return words.length * 10 + Math.round((upper / letters) * 10);
 }
 
 export function extractIdNumber(text: string, jurisdiction: Jurisdiction): string | undefined {
@@ -66,10 +76,9 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
   const out: OcrExtract = {};
 
   out.nric = extractIdNumber(text, jurisdiction);
-  const nricLine = out.nric ? lines.findIndex((l) => l.toUpperCase().includes(out.nric!)) : -1;
 
-  // Name — strategy 1 (most reliable for ID cards): the value(s) between the "Name/Nama" label and
-  // the next field label (Race, Date of birth, Sex…). Permissive about the name's own formatting.
+  // Name — strategy 1 (best when labels read cleanly): text between the "Name" label and the next
+  // field label (Race, Date of birth, Sex…). Permissive about the name's own formatting.
   const nameLabelIdx = lines.findIndex((l) => NAME_LABEL.test(l) && !STOP_LABEL.test(l));
   if (nameLabelIdx >= 0) {
     const collected: string[] = [];
@@ -80,15 +89,22 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
       if (plausibleNameContent(lines[i]) && !HEADER_WORDS.test(lines[i])) collected.push(lines[i].trim());
       else if (collected.length) break;
     }
-    if (collected.length) out.name = collected.join(' ').replace(/\s+/g, ' ');
+    if (collected.length) out.name = nameCore(collected.join(' '));
   }
-  // Strategy 2: first name-shaped line — searching AFTER the NRIC first (names sit near the number).
+
+  // Strategy 2 (no readable label): score every line, pick the best name candidate. Tolerates OCR
+  // noise appended to the name line (e.g. "NYAN YUEN KEONG 7}") and rejects garbled chrome lines.
   if (!out.name) {
-    const ordered = nricLine >= 0
-      ? [...lines.slice(nricLine + 1), ...lines.slice(0, nricLine + 1)]
-      : lines;
-    const cand = ordered.find(looksLikeName);
-    if (cand) out.name = cand.replace(/\s+/g, ' ').trim();
+    let best = '';
+    let bestScore = 0;
+    for (const line of lines) {
+      const s = nameScore(line);
+      if (s > bestScore) {
+        bestScore = s;
+        best = nameCore(line);
+      }
+    }
+    if (best) out.name = best;
   }
 
   // Address: lines following an "Address:/Alamat:" label (best-effort).

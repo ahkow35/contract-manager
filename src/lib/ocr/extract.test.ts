@@ -43,6 +43,16 @@ describe('SG NRIC realistic layouts', () => {
     const r = extractFromOcrText('S1234567D\nName: Tan Ah Kow\nRace: Chinese', 'SG');
     expect(r.name).toBe('Tan Ah Kow');
   });
+
+  it('real-world messy scan: no readable label + OCR noise on the name line', () => {
+    // Actual OCR output from a Singapore NRIC where the "Name" label was garbled and the name
+    // line picked up trailing noise ("7}"). Expect the name, not the garbled chrome line.
+    const raw =
+      'REPUBLIC OF SINGAPORE ~~ flmmadl,\nIDENTITY CARDNO. LR |\n\n' +
+      'a i EEE © A At ERS Ra 4 awa? 5 SE — 2\nNYAN YUEN KEONG 7}\n(YAN YONGQIANG)\n— 5';
+    const r = extractFromOcrText(raw, 'SG');
+    expect(r.name).toBe('NYAN YUEN KEONG');
+  });
 });
 
 describe('extractFromOcrText', () => {
