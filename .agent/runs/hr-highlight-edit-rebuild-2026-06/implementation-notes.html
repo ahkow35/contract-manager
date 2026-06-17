@@ -244,6 +244,13 @@
         phase: "Supabase Auth URL",
         actor: "user",
         summary: "MANUAL STEP REQUIRED: Supabase dashboard → Authentication → URL Configuration. Site URL = https://contract-manager-ahkow35s-projects.vercel.app. Redirect URLs: https://contract-manager-ahkow35s-projects.vercel.app/** and http://localhost:3000/**. Until done, password-reset links won't redirect correctly."
+      },
+      {
+        ts: "2026-06-17T04:40:00Z",
+        status: "validated",
+        phase: "review + E2E + deploy",
+        actor: "agent",
+        summary: "Opus-led Sonnet team finished the build. Security review applied (H1 getUser in reset, H2 edge /admin role gate, M3 templateId registry-validate); C1 service-role-key alarm confirmed false (never committed, gitignored). Admin E2E in headless Chromium on real Supabase: unauth admin APIs 307→login, admin login, /admin gating, user list, usage dashboard, create+remove user all pass. Deployed to production; live routes verified, JWT shows role=admin. tsc/eslint/55 tests/build all clean."
       }
     ];
 
