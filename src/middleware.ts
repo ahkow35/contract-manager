@@ -8,6 +8,15 @@ export async function middleware(request: NextRequest) {
   // Dev mode: no Supabase env → no gate, app runs open with a banner.
   if (!isSupabaseConfigured) return NextResponse.next();
 
+  // Safety net: a password-recovery link carries a ?code=. If it lands on root (or anywhere that
+  // isn't the reset page), funnel it to /reset-password so the code can be exchanged.
+  const path0 = request.nextUrl.pathname;
+  if (request.nextUrl.searchParams.has('code') && path0 !== '/reset-password' && !path0.startsWith('/auth')) {
+    const url = request.nextUrl.clone();
+    url.pathname = '/reset-password';
+    return NextResponse.redirect(url);
+  }
+
   let response = NextResponse.next({ request });
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
