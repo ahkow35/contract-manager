@@ -39,17 +39,23 @@ export function IntakeForm({ templateId }: { templateId: string }) {
   if (!template) return <p className="text-sm text-red-600">Unknown template: {templateId}</p>;
 
   const t = template;
-  const hasSalaryWords = t.fields.some((f) => f.id === 'salaryWords');
+  const fieldIds = new Set(t.fields.map((f) => f.id));
 
   function set(id: string, value: string) {
     setValues((prev) => {
       const next = { ...prev, [id]: value };
-      if (id === 'salaryFigure' && hasSalaryWords && !prev.salaryWords) {
-        next.salaryWords = amountToWords(value);
+      // Auto-fill the matching "{prefix}Words" field from any "{prefix}Figure" amount,
+      // but never clobber a value the operator has already typed/edited.
+      if (id.endsWith('Figure')) {
+        const wordsId = `${id.slice(0, -'Figure'.length)}Words`;
+        if (fieldIds.has(wordsId) && !prev[wordsId]) next[wordsId] = amountToWords(value);
       }
       return next;
     });
   }
+
+  // A field is hidden until its controlling checkbox (showIf) is ticked.
+  const isVisible = (f: FieldDef) => !f.showIf || !!values[f.showIf];
 
   function applyOcr(extract: OcrExtract) {
     setValues((prev) => {
@@ -112,7 +118,7 @@ export function IntakeForm({ templateId }: { templateId: string }) {
           void generate();
         }}
       >
-        {t.fields.map((f) => (
+        {t.fields.filter(isVisible).map((f) => (
           <Field key={f.id} field={f} value={values[f.id] ?? ''} onChange={(v) => set(f.id, v)} />
         ))}
 
@@ -148,6 +154,25 @@ export function IntakeForm({ templateId }: { templateId: string }) {
 function Field({ field, value, onChange }: { field: FieldDef; value: string; onChange: (v: string) => void }) {
   const base =
     'mt-1 w-full rounded-md border border-zinc-300 px-3 py-2 text-sm focus:border-zinc-900 focus:outline-none';
+
+  // A toggle for an optional clause: checked stores '1', unchecked stores ''.
+  if (field.type === 'checkbox') {
+    return (
+      <label className="flex items-start gap-2 rounded-md border border-zinc-200 bg-zinc-50 px-3 py-2">
+        <input
+          type="checkbox"
+          className="mt-0.5 h-4 w-4 rounded border-zinc-300"
+          checked={!!value}
+          onChange={(e) => onChange(e.target.checked ? '1' : '')}
+        />
+        <span className="text-sm">
+          <span className="font-medium text-zinc-800">{field.label}</span>
+          {field.help && <span className="mt-0.5 block text-xs text-zinc-400">{field.help}</span>}
+        </span>
+      </label>
+    );
+  }
+
   return (
     <label className="block">
       <span className="text-sm font-medium text-zinc-800">

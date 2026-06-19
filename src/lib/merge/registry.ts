@@ -3,10 +3,14 @@
 
 import type { TemplateDef } from './types';
 import { sgLocalSecondment } from './templates/sg-local-secondment';
+import { sgNonLocalSecondment } from './templates/sg-non-local-secondment';
+import { sgInternalEmployee } from './templates/sg-internal-employee';
 import { lcPartTimer } from './templates/lc-part-timer';
 
 export const TEMPLATES: TemplateDef[] = [
   sgLocalSecondment,
+  sgNonLocalSecondment,
+  sgInternalEmployee,
   lcPartTimer, // MY — retained; blocked until official .docx is tokenised + dropped in
 ];
 

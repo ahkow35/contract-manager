@@ -49,9 +49,15 @@ function b64ToArrayBuffer(b64: string): ArrayBuffer {
   return bytes.buffer;
 }
 
+/** A field gated by an unticked checkbox is inactive — skip its validation and tokens. */
+function isActive(f: FieldDef, v: FormValues): boolean {
+  return !f.showIf || !!(v[f.showIf] ?? '').trim();
+}
+
 function genericValidate(fields: FieldDef[], v: FormValues): string[] {
   const errs: string[] = [];
   for (const f of fields) {
+    if (!isActive(f, v)) continue;
     const val = (v[f.id] ?? '').trim();
     if (f.required && !val) errs.push(`${f.label} is required.`);
     if (!val) continue;
@@ -69,6 +75,14 @@ function genericValidate(fields: FieldDef[], v: FormValues): string[] {
 function genericTokens(fields: FieldDef[], v: FormValues): TokenMap {
   const out: TokenMap = {};
   for (const f of fields) {
+    if (f.type === 'checkbox') {
+      out[f.id] = !!(v[f.id] ?? '').trim(); // boolean drives {#flag} sections
+      continue;
+    }
+    if (!isActive(f, v)) {
+      out[f.id] = '';
+      continue;
+    }
     let val = (v[f.id] ?? '').trim();
     if (f.type === 'date') val = longOrdinal(val) ?? val;
     out[f.id] = val;

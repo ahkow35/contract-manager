@@ -6,7 +6,7 @@ import { describe, expect, it } from 'vitest';
 import { sgLocalSecondment } from './sg-local-secondment';
 
 /** End-to-end: real template module + real tokenised .docx, rendered with a fresh fake employee. */
-function renderText(data: Record<string, string>): string {
+function renderText(data: Record<string, string | boolean>): string {
   const buf = readFileSync(
     join(process.cwd(), 'public/templates/sg-local-secondment.tokenised.docx'),
   );
