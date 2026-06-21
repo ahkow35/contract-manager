@@ -6,6 +6,8 @@ import { createWorker } from 'tesseract.js';
 export async function recognizeImage(
   image: File | Blob,
   onProgress?: (fraction: number) => void,
+  /** Tesseract page-segmentation mode. '4' (single column) suits the binarised MyKad; default auto. */
+  psm?: string,
 ): Promise<string> {
   const worker = await createWorker('eng', 1, {
     workerPath: '/ocr/worker.min.js',
@@ -17,6 +19,7 @@ export async function recognizeImage(
     },
   });
   try {
+    if (psm) await worker.setParameters({ tessedit_pageseg_mode: psm as never });
     const { data } = await worker.recognize(image);
     return data.text;
   } finally {

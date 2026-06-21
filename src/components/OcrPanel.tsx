@@ -5,6 +5,7 @@ import type { Jurisdiction } from '@/lib/merge/types';
 import { extractFromOcrText, type OcrExtract } from '@/lib/ocr/extract';
 import { recognizeImage } from '@/lib/ocr/recognize';
 import { isPdf, pdfFirstPageToBlob } from '@/lib/ocr/pdf';
+import { binarizeIdCard } from '@/lib/ocr/preprocess';
 
 const ID_LABEL: Record<Jurisdiction, string> = { SG: 'NRIC card', MY: 'MyKad' };
 const MAX_FILES = 2;
@@ -52,8 +53,11 @@ export function OcrPanel({
         setStage(files.length > 1 ? `Reading scan ${i + 1} of ${files.length}…` : 'Reading…');
         setProgress(0);
         const imageBlob = isPdf(files[i]) ? await pdfFirstPageToBlob(files[i]) : files[i];
-        newPreviews.push(URL.createObjectURL(imageBlob));
-        texts.push(await recognizeImage(imageBlob, setProgress));
+        newPreviews.push(URL.createObjectURL(imageBlob)); // preview the real card, not the binarised copy
+        // MyKad's holographic background defeats raw OCR; binarise the blue channel first and read
+        // it as a single column (PSM 4). SG NRIC reads fine as-is, so leave it untouched.
+        const ocrBlob = jurisdiction === 'MY' ? await binarizeIdCard(imageBlob) : imageBlob;
+        texts.push(await recognizeImage(ocrBlob, setProgress, jurisdiction === 'MY' ? '4' : undefined));
       }
       setPreviews(newPreviews);
       const combined = texts.join('\n'); // merge both scans (e.g. NRIC front + back)

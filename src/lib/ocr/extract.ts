@@ -19,7 +19,18 @@ const ADDR_LABEL = /\b(address|alamat)\b\s*[:.]?\s*(.*)$/i;
 
 // Words that appear on ID-card chrome (labels/headers), not in a person's name.
 const HEADER_WORDS =
-  /\b(republic|singapore|identity|card|cardno|nric|fin|malaysia|kad|pengenalan|mykad|warganegara|race|bangsa|sex|jantina|date|tarikh|birth|lahir|country|negara|place|nationality|kewarganegaraan|address|alamat|valid|expiry|blood)\b/i;
+  /\b(republic|singapore|identity|card|cardno|nric|fin|malaysia|kad|pengenalan|mykad|warganegara|lelaki|perempuan|islam|race|bangsa|sex|jantina|date|tarikh|birth|lahir|country|negara|place|nationality|kewarganegaraan|address|alamat|valid|expiry|blood)\b/i;
+// Global variant for stripping chrome words out of OCR'd address lines (warganegara/perempuan…).
+const CHROME_WORDS_G =
+  /\b(warganegara|lelaki|perempuan|islam|mykad|kad|pengenalan|malaysia|identity|card)\b/gi;
+
+// MyKad has no "Address:" label — the address is bare lines. Identify them by street/locality
+// keywords, a 5-digit postcode, or a Malaysian state.
+const MY_ADDR_HINT =
+  /\b(no\.?\s*\d|jalan|jln|lorong|lrg|taman|kampung|kg\.?|persiaran|lebuh|bandar|blok|tingkat|apartment|residensi)\b/i;
+const MY_POSTCODE = /\b\d{5}\b/;
+const MY_STATE =
+  /\b(johor|kedah|kelantan|melaka|malacca|negeri sembilan|pahang|perak|perlis|pulau pinang|penang|sabah|sarawak|selangor|terengganu|kuala lumpur|labuan|putrajaya|persekutuan)\b/i;
 
 // Field labels that follow the name on an ID card — used to bound the name region.
 const STOP_LABEL =
@@ -95,9 +106,18 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
   // Strategy 2 (no readable label): score every line, pick the best name candidate. Tolerates OCR
   // noise appended to the name line (e.g. "NYAN YUEN KEONG 7}") and rejects garbled chrome lines.
   if (!out.name) {
+    // On a MyKad the name sits directly below the ID number — searching only the lines after it
+    // avoids the garbled "KAD PENGENALAN / IDENTITY CARD" title block scoring as a name.
+    let scope = lines;
+    if (jurisdiction === 'MY') {
+      // Permissive id-line match (tolerates a dropped leading digit) — independent of whether the
+      // strict NRIC extraction above succeeded.
+      const idIdx = lines.findIndex((l) => /\d{5,6}[-\s]?\d{2}[-\s]?\d{4}/.test(l));
+      if (idIdx >= 0) scope = lines.slice(idIdx + 1);
+    }
     let best = '';
     let bestScore = 0;
-    for (const line of lines) {
+    for (const line of scope) {
       const s = nameScore(line);
       if (s > bestScore) {
         bestScore = s;
@@ -113,6 +133,16 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
     const inline = lines[addrIdx].match(ADDR_LABEL)?.[2]?.trim();
     const parts = [inline, ...lines.slice(addrIdx + 1, addrIdx + 4)].filter(Boolean) as string[];
     if (parts.length) out.address = parts.join('\n');
+  }
+
+  // MyKad has no address label — collect lines that look like an address (street/postcode/state)
+  // and strip trailing card-chrome words the OCR appends (WARGANEGARA, PEREMPUAN…).
+  if (!out.address && jurisdiction === 'MY') {
+    const addrLines = lines
+      .filter((l) => MY_ADDR_HINT.test(l) || MY_POSTCODE.test(l) || MY_STATE.test(l))
+      .map((l) => l.replace(CHROME_WORDS_G, ' ').replace(/[^\w\s,./-]/g, ' ').replace(/\s+/g, ' ').trim())
+      .filter((l) => l.replace(/[^A-Za-z]/g, '').length >= 3);
+    if (addrLines.length) out.address = addrLines.slice(0, 4).join('\n');
   }
 
   return out;

@@ -2,6 +2,23 @@
 
 All notable changes to Contract Manager (formerly highlight-edit).
 
+## 2026-06-21 (later) — MyKad OCR fix
+
+The MyKad's holographic security background was defeating Tesseract entirely (raw OCR
+returned pure noise). The dark text separates in the blue channel, so:
+
+- **`preprocess.ts` (new):** client-side blue-channel **Sauvola adaptive binarisation**
+  (per-pixel local threshold via integral images) — removes the busy background while
+  coping with the card's large photo and uneven lighting, where a global threshold fails.
+  Scoped to MY (SG NRIC reads fine untouched). Runs on a canvas; nothing leaves the browser.
+- **`recognize.ts`:** optional page-segmentation mode; MyKad uses PSM 4 (single column).
+- **`extract.ts`:** MyKad has no "Address:" label, so address is gathered by street/postcode/
+  state keywords with card-chrome words stripped; and the name is taken from the line below
+  the ID number (so the garbled "IDENTITY CARD" title block can't win the name scoring).
+- Verified end-to-end in a real browser (canvas + Tesseract.js) against an actual MyKad:
+  name, street line, and most of the NRIC now extract where there was previously only noise.
+  Unit test added with the real binarised OCR text. OCR remains assist-only — operator verifies.
+
 ## 2026-06-21
 
 ### Malaysia Part-Timer — now backed by LC's real .docx
