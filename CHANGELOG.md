@@ -2,6 +2,24 @@
 
 All notable changes to Contract Manager (formerly highlight-edit).
 
+## 2026-06-21 (later) — MyKad OCR: full address extraction
+
+Building on the binarisation fix — the middle address rows ("TAMAN BUKIT MEWAH",
+"43000 KAJANG") were still being garbled or dropped. Three changes get the whole address:
+
+- **`preprocess.ts`:** crop to the card's dark-content bounding box (drops the white scan
+  margins so the print isn't shrunk by the surrounding page) and upscale to a working width
+  before Sauvola — small middle-row text now resolves.
+- **`recognize.ts` / `OcrPanel`:** the MyKad is read with **two** page-segmentation passes
+  (PSM 4 + PSM 6) and merged — they capture complementary rows of the card.
+- **`extract.ts`:** the MyKad address is now **assembled by row** (street → locality →
+  postcode → state) and emitted in canonical order regardless of OCR line order, with
+  chrome words and lower-case OCR noise stripped per row.
+- Verified end-to-end in a real browser on an actual MyKad: address extracts cleanly as
+  `NO 38A JALAN 72 / TAMAN BUKIT MEWAH / 43000 KAJANG / SELANGOR`. (Name still surfaces the
+  given names but loses the first letter of the surname, and the NRIC's leading digits can
+  misread — both flagged for operator correction; OCR stays assist-only.)
+
 ## 2026-06-21 (later) — Contract Staff allowance defaults
 
 - Each Contract Staff brand now **pre-fills its standard allowance amounts** (figure +

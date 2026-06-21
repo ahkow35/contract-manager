@@ -54,10 +54,10 @@ export function OcrPanel({
         setProgress(0);
         const imageBlob = isPdf(files[i]) ? await pdfFirstPageToBlob(files[i]) : files[i];
         newPreviews.push(URL.createObjectURL(imageBlob)); // preview the real card, not the binarised copy
-        // MyKad's holographic background defeats raw OCR; binarise the blue channel first and read
-        // it as a single column (PSM 4). SG NRIC reads fine as-is, so leave it untouched.
+        // MyKad's holographic background defeats raw OCR; binarise the blue channel first, then read
+        // with PSM 4 + 6 (they catch complementary lines). SG NRIC reads fine as-is, untouched.
         const ocrBlob = jurisdiction === 'MY' ? await binarizeIdCard(imageBlob) : imageBlob;
-        texts.push(await recognizeImage(ocrBlob, setProgress, jurisdiction === 'MY' ? '4' : undefined));
+        texts.push(await recognizeImage(ocrBlob, setProgress, jurisdiction === 'MY' ? ['4', '6'] : undefined));
       }
       setPreviews(newPreviews);
       const combined = texts.join('\n'); // merge both scans (e.g. NRIC front + back)
