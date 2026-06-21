@@ -44,11 +44,15 @@ export function IntakeForm({ templateId }: { templateId: string }) {
   function set(id: string, value: string) {
     setValues((prev) => {
       const next = { ...prev, [id]: value };
-      // Auto-fill the matching "{prefix}Words" field from any "{prefix}Figure" amount,
-      // but never clobber a value the operator has already typed/edited.
+      // Keep the matching "{prefix}Words" field in step with a "{prefix}Figure" amount — but never
+      // clobber words the operator has hand-edited. Re-derive when the words are empty or still match
+      // the auto value for the *previous* figure (covers brand-default allowances changed per hire).
       if (id.endsWith('Figure')) {
         const wordsId = `${id.slice(0, -'Figure'.length)}Words`;
-        if (fieldIds.has(wordsId) && !prev[wordsId]) next[wordsId] = amountToWords(value);
+        const cur = prev[wordsId] ?? '';
+        if (fieldIds.has(wordsId) && (!cur || cur === amountToWords(prev[id] ?? ''))) {
+          next[wordsId] = amountToWords(value);
+        }
       }
       return next;
     });

@@ -126,4 +126,21 @@ describe('MY Contract Staff — per-brand render', () => {
     const errs = csBvlgari.validate({ ...common, name: '' });
     expect(errs.some((e) => /name is required/i.test(e))).toBe(true);
   });
+
+  it('pre-fills brand-standard allowance defaults (figure + words)', () => {
+    const def = (tpl: typeof csBvlgari, id: string) => tpl.fields.find((f) => f.id === id)?.default;
+    expect(def(csBvlgari, 'transportFigure')).toBe('200');
+    expect(def(csBvlgari, 'transportWords')).toBe('Two Hundred');
+    expect(def(csBvlgari, 'mealFigure')).toBe('200');
+    expect(def(csBvlgari, 'groomingFigure')).toBe('100');
+    expect(def(csBvlgari, 'groomingWords')).toBe('One Hundred');
+    expect(def(csGivenchy, 'travelFigure')).toBe('500');
+    expect(def(csGivenchy, 'travelWords')).toBe('Five Hundred');
+    expect(def(csCoach, 'allowanceFigure')).toBe('100');
+    expect(def(csGuerlain, 'travelFigure')).toBe('400');
+    expect(def(csGuerlain, 'postProbTravelFigure')).toBe('600');
+    // salary stays blank — it's negotiated per hire, not a brand default
+    expect(def(csBvlgari, 'salaryFigure')).toBeUndefined();
+    expect(def(csGuerlain, 'salaryFigure')).toBeUndefined();
+  });
 });

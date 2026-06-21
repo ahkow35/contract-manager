@@ -2,6 +2,17 @@
 
 All notable changes to Contract Manager (formerly highlight-edit).
 
+## 2026-06-21 (later) — Contract Staff allowance defaults
+
+- Each Contract Staff brand now **pre-fills its standard allowance amounts** (figure +
+  words) from the brand's template, so the operator only edits exceptions: Bvlgari
+  Transport/Meal RM200, Grooming RM100; Coach RM100; Givenchy Travelling RM500,
+  Grooming RM100; Guerlain Travelling RM400, post-probation RM600. Salary stays blank
+  (negotiated per hire).
+- `IntakeForm` words auto-fill now re-derives when an allowance figure is changed (it
+  previously skipped any field that already had a value, i.e. a default), while still
+  never clobbering hand-edited words.
+
 ## 2026-06-21 (later) — MyKad OCR fix
 
 The MyKad's holographic security background was defeating Tesseract entirely (raw OCR

@@ -109,9 +109,12 @@ const salary = (label = 'Monthly basic salary (RM)'): FieldDef[] => [
   { id: 'salaryWords', label: 'Basic salary in words', type: 'text', required: true,
     help: 'Auto-filled from the figure — verify before generating.' },
 ];
-const allowance = (prefix: string, label: string, required = true): FieldDef[] => [
-  { id: `${prefix}Figure`, label: `${label} (RM)`, type: 'currency', required },
-  { id: `${prefix}Words`, label: `${label} in words`, type: 'text', required,
+// `def` pre-fills the brand-standard amount (allowances are fixed policy per brand; the operator
+// edits only if a hire differs). The words default is derived so both arrive pre-filled.
+const allowance = (prefix: string, label: string, def?: string): FieldDef[] => [
+  { id: `${prefix}Figure`, label: `${label} (RM)`, type: 'currency', required: true, default: def },
+  { id: `${prefix}Words`, label: `${label} in words`, type: 'text', required: true,
+    default: def ? amountToWords(def) : undefined,
     help: 'Auto-filled from the figure — verify before generating.' },
 ];
 
@@ -124,9 +127,9 @@ export const csBvlgari = makeContractStaff({
     ...HEADER,
     { id: 'designation', label: 'Designation', type: 'text', required: true, default: 'Client Advisor' },
     ...salary(),
-    ...allowance('transport', 'Transport Allowance'),
-    ...allowance('meal', 'Meal Allowance'),
-    ...allowance('grooming', 'Grooming Allowance'),
+    ...allowance('transport', 'Transport Allowance', '200'),
+    ...allowance('meal', 'Meal Allowance', '200'),
+    ...allowance('grooming', 'Grooming Allowance', '100'),
     ...DATES,
     NRIC,
   ],
@@ -156,7 +159,7 @@ export const csCoach = makeContractStaff({
     ...HEADER,
     { id: 'designation', label: 'Designation', type: 'text', required: true, default: 'Talent Acquisition Assistant' },
     ...salary(),
-    ...allowance('allowance', 'Monthly allowance'),
+    ...allowance('allowance', 'Monthly allowance', '100'),
     ...DATES,
     NRIC,
   ],
@@ -171,8 +174,8 @@ export const csGivenchy = makeContractStaff({
     ...HEADER,
     { id: 'designation', label: 'Designation', type: 'text', required: true, default: 'Beauty Advisor' },
     ...salary(),
-    ...allowance('travel', 'Travelling Allowance'),
-    ...allowance('grooming', 'Grooming Allowance'),
+    ...allowance('travel', 'Travelling Allowance', '500'),
+    ...allowance('grooming', 'Grooming Allowance', '100'),
     ...DATES,
     NRIC,
   ],
@@ -187,9 +190,9 @@ export const csGuerlain = makeContractStaff({
     ...HEADER,
     { id: 'designation', label: 'Designation', type: 'text', required: true, default: 'Beauty Consultant' },
     ...allowance('salary', 'Monthly basic salary — initial'),
-    ...allowance('travel', 'Travelling Allowance — initial'),
+    ...allowance('travel', 'Travelling Allowance — initial', '400'),
     ...allowance('postProbSalary', 'Post-probation monthly salary'),
-    ...allowance('postProbTravel', 'Post-probation Travelling Allowance'),
+    ...allowance('postProbTravel', 'Post-probation Travelling Allowance', '600'),
     ...DATES,
     NRIC,
   ],
