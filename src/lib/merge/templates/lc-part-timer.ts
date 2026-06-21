@@ -1,8 +1,8 @@
-/* LC Malaysia part-timer employment contract — the retained prior build.
+/* LC Malaysia part-timer employment contract.
  * Field set + token map + validation + filename ported from
  * CoWork/Employment Contract/contract-merge.js (design approved 2026-06-10).
- * The tokenised .docx is a content-faithful reconstruction of LC's supplied PDFs
- * (the original Word file was never provided). Swap in LC's real .docx if it surfaces. */
+ * Tokenised from LC's real .docx (genuine letterhead/footer); the 15 brand samples
+ * all share this one template — only filled values differ. */
 
 import { durationStr, longOrdinal, parseISO } from '../format';
 import type { FormValues, TemplateDef, TokenMap } from '../types';

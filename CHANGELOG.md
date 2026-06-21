@@ -2,6 +2,19 @@
 
 All notable changes to Contract Manager (formerly highlight-edit).
 
+## 2026-06-21
+
+### Malaysia Part-Timer — now backed by LC's real .docx
+- Received LC's actual Word files (15 filled Part Timer samples, one per brand).
+  Confirmed all 15 share one template; tokenised the genuine `.docx` (real
+  letterhead/logo/footer) and **replaced the PDF reconstruction**. Pixel-perfect now.
+- Multi-paragraph address block collapses to a single `{address}` token (line breaks
+  preserved). 90 tests pass.
+
+### Contract Staff (5 brands) — assessed, not yet built
+- These are **not** one template: per-brand divergence in allowances, benefits annex,
+  public-holiday tables, and client co-signatories. Decision on approach pending.
+
 ## 2026-06-19 (later)
 
 ### Non-Local Secondment — commission now fully optional
