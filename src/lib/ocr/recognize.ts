@@ -6,8 +6,9 @@ import { createWorker } from 'tesseract.js';
 export async function recognizeImage(
   image: File | Blob,
   onProgress?: (fraction: number) => void,
-  /** Tesseract page-segmentation mode. '4' (single column) suits the binarised MyKad; default auto. */
-  psm?: string,
+  /** Page-segmentation modes to run and merge. The MyKad uses ['4','6'] — PSM 4 (single column)
+   *  and PSM 6 (uniform block) read complementary lines of the card. Default: one auto pass. */
+  psms?: string[],
 ): Promise<string> {
   const worker = await createWorker('eng', 1, {
     workerPath: '/ocr/worker.min.js',
@@ -19,9 +20,17 @@ export async function recognizeImage(
     },
   });
   try {
-    if (psm) await worker.setParameters({ tessedit_pageseg_mode: psm as never });
-    const { data } = await worker.recognize(image);
-    return data.text;
+    if (!psms || psms.length === 0) {
+      const { data } = await worker.recognize(image);
+      return data.text;
+    }
+    const out: string[] = [];
+    for (const psm of psms) {
+      await worker.setParameters({ tessedit_pageseg_mode: psm as never });
+      const { data } = await worker.recognize(image);
+      out.push(data.text);
+    }
+    return out.join('\n');
   } finally {
     await worker.terminate();
   }

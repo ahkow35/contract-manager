@@ -68,27 +68,26 @@ describe('extractFromOcrText', () => {
     expect(r.address).toContain('JALAN SAUJANA 2');
   });
 
-  it('MY: real binarised MyKad OCR (busy hologram) — name below the ID, address by keyword', () => {
-    // Actual Tesseract output after blue-channel binarisation of a real MyKad. The title block
-    // ("KAD PENGENALAN / IDENTITY CARD") is garbled and the name/address lines carry trailing
-    // chrome noise — exactly the mess the heuristics must survive.
+  it('MY: real binarised MyKad OCR (busy hologram) — name below the ID, address assembled in order', () => {
+    // Merged output of the two page-segmentation passes on a binarised real MyKad. The title block
+    // is garbled, the address rows arrive out of order and carry trailing chrome/OCR noise — exactly
+    // the mess the assembler must turn back into a clean four-row address.
     const raw = [
       'KAD PENGENAL AM 7h, ,',
       'MALAY SLA) I MyKad',
       'IDEN TET Y GA he: A',
       '020110-10-0888 -.7. 2?',
       'oH YEE TENG (ohn',
-      'NO 38A JALAN 72',
-      'TAMAN BUKIT MEWAN WARGANEGARA',
-      '43000 KAJANG ever PEREMPUAN',
-      'SELANGOR',
+      'NO 38A JALAN 72 sennatmigaas', // street (with OCR noise tail)
+      'TAMAN BUKIT MEWAH | WARGANEGARA', // locality (chrome appended)
+      'SELANGOR si', // state — arrives BEFORE the postcode line (different OCR pass)
+      '43000 KAJANG ever PEREMPUAN', // postcode + city, trailing chrome
     ].join('\n');
     const r = extractFromOcrText(raw, 'MY');
-    expect(r.nric).toBe('020110-10-0888'); // strict 6-2-4 read cleanly here
+    expect(r.nric).toBe('020110-10-0888');
     expect(r.name).toContain('YEE TENG'); // name picked from below the ID, not the title block
     expect(r.name).not.toMatch(/WARGANEGARA|IDEN|MYKAD/i);
-    expect(r.address).toContain('JALAN 72');
-    expect(r.address).toContain('TAMAN BUKIT');
-    expect(r.address).not.toMatch(/WARGANEGARA|PEREMPUAN/i); // chrome stripped
+    // canonical order street → locality → postcode → state, noise & chrome stripped
+    expect(r.address).toBe('NO 38A JALAN 72\nTAMAN BUKIT MEWAH\n43000 KAJANG\nSELANGOR');
   });
 });

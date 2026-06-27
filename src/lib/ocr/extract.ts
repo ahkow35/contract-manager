@@ -24,13 +24,43 @@ const HEADER_WORDS =
 const CHROME_WORDS_G =
   /\b(warganegara|lelaki|perempuan|islam|mykad|kad|pengenalan|malaysia|identity|card)\b/gi;
 
-// MyKad has no "Address:" label — the address is bare lines. Identify them by street/locality
-// keywords, a 5-digit postcode, or a Malaysian state.
-const MY_ADDR_HINT =
-  /\b(no\.?\s*\d|jalan|jln|lorong|lrg|taman|kampung|kg\.?|persiaran|lebuh|bandar|blok|tingkat|apartment|residensi)\b/i;
+// MyKad has no "Address:" label — the address is bare lines spread across the card. We classify
+// each line into one of the four address rows and emit them in canonical order, so the result is
+// clean regardless of OCR line order (we run two page-segmentation passes that read different rows).
+const MY_STREET = /\b(no\.?\s*\d|jalan|jln|lorong|lrg|persiaran|lebuh)\b/i;
+const MY_LOCALITY = /\b(taman|kampung|kg\.?|bandar|desa|seksyen|blok|apartment|residensi)\b/i;
 const MY_POSTCODE = /\b\d{5}\b/;
 const MY_STATE =
   /\b(johor|kedah|kelantan|melaka|malacca|negeri sembilan|pahang|perak|perlis|pulau pinang|penang|sabah|sarawak|selangor|terengganu|kuala lumpur|labuan|putrajaya|persekutuan)\b/i;
+
+/** Assemble a MyKad address from OCR lines: pick the best line per row, output street→locality→
+ *  postcode→state. Strips card-chrome words and OCR noise (lower-case junk tokens). */
+function myKadAddress(lines: string[]): string | undefined {
+  const cats: Array<['street' | 'locality' | 'post' | 'state', RegExp]> = [
+    ['street', MY_STREET], ['locality', MY_LOCALITY], ['post', MY_POSTCODE], ['state', MY_STATE],
+  ];
+  const tidy = (cat: string, l: string): string => {
+    if (cat === 'state') return (l.match(MY_STATE)?.[0] ?? l).toUpperCase();
+    if (cat === 'post') {
+      const m = l.match(/\b(\d{5})\s+([A-Za-z]{2,})/);
+      return m ? `${m[1]} ${m[2].toUpperCase()}` : l;
+    }
+    // street/locality: drop lower-case OCR noise (MyKad text is upper-case) and 1-char junk.
+    return l.split(/\s+/).filter((t) => t.length > 1 && /[A-Z0-9]/.test(t)).join(' ');
+  };
+  const picked: Record<string, string> = {};
+  for (const raw of lines) {
+    const l = raw.replace(CHROME_WORDS_G, ' ').replace(/[^\w\s,./-]/g, ' ').replace(/\s+/g, ' ').trim();
+    if (l.replace(/[^A-Za-z]/g, '').length < 3) continue;
+    for (const [cat, rx] of cats) {
+      if (!rx.test(l)) continue;
+      const t = tidy(cat, l);
+      if (t && (!picked[cat] || t.length > picked[cat].length)) picked[cat] = t;
+    }
+  }
+  const out = (['street', 'locality', 'post', 'state'] as const).map((c) => picked[c]).filter(Boolean);
+  return out.length ? out.join('\n') : undefined;
+}
 
 // Field labels that follow the name on an ID card — used to bound the name region.
 const STOP_LABEL =
@@ -135,15 +165,8 @@ export function extractFromOcrText(text: string, jurisdiction: Jurisdiction): Oc
     if (parts.length) out.address = parts.join('\n');
   }
 
-  // MyKad has no address label — collect lines that look like an address (street/postcode/state)
-  // and strip trailing card-chrome words the OCR appends (WARGANEGARA, PEREMPUAN…).
-  if (!out.address && jurisdiction === 'MY') {
-    const addrLines = lines
-      .filter((l) => MY_ADDR_HINT.test(l) || MY_POSTCODE.test(l) || MY_STATE.test(l))
-      .map((l) => l.replace(CHROME_WORDS_G, ' ').replace(/[^\w\s,./-]/g, ' ').replace(/\s+/g, ' ').trim())
-      .filter((l) => l.replace(/[^A-Za-z]/g, '').length >= 3);
-    if (addrLines.length) out.address = addrLines.slice(0, 4).join('\n');
-  }
+  // MyKad has no address label — assemble it from the bare address rows.
+  if (!out.address && jurisdiction === 'MY') out.address = myKadAddress(lines);
 
   return out;
 }

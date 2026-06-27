@@ -2,6 +2,54 @@
 
 All notable changes to Contract Manager (formerly highlight-edit).
 
+## 2026-06-27 — LC Contract Staff: operator feedback round
+
+Applied the operator's feedback to all 5 LC Malaysia Contract Staff brand templates,
+in two phases (`feat/lc-contract-staff-updates`).
+
+**Phase A — schema (`contract-staff.ts`):** added operator-editable `probationMonths`,
+`noticeProbation`, `noticeAfterProbation` fields to every brand via a shared `probation()`
+helper. `probationMonths` pre-fills per brand (Bvlgari/Givenchy 3, Coach 6; Chanel/Guerlain
+blank). The generic factory auto-wires the tokens.
+
+**Phase B — templates (.docx):**
+- **Bold** Contract Start/End Date, Position, Salary, and Allowance values (run-split so only
+  the value bolds, not the sentence).
+- **Probation** period tokenised to `{probationMonths}` (Bvlgari/Coach/Givenchy; Chanel/Guerlain
+  have no fixed-term clause so stay blank).
+- **Confirmation** statement → "I, {name}, confirm…" (Bvlgari/Coach/Guerlain; Chanel/Givenchy
+  already carried it).
+- **Coach footer** updated to the new registered address (Menara AIA Sentral); the other four
+  brands already had it.
+- **Address** paragraph forced to single line-spacing — fixes the over-large gaps between
+  address lines reported in Word.
+
+**Deferred (per operator):** the annual-leave clause + full-time toggle, and tokenising the
+termination-notice periods (a weeks→months change that needs an HR-law check). The
+`noticeProbation`/`noticeAfterProbation` fields exist in the form but are not yet printed.
+
+Verification: `tsc` clean, 98 tests pass, structural checks confirm every change landed.
+Bold/line-spacing are not test-visible — sample contracts (Bvlgari, Coach) generated for a
+Word eyeball before merge.
+
+## 2026-06-21 (later) — MyKad OCR: full address extraction
+
+Building on the binarisation fix — the middle address rows ("TAMAN BUKIT MEWAH",
+"43000 KAJANG") were still being garbled or dropped. Three changes get the whole address:
+
+- **`preprocess.ts`:** crop to the card's dark-content bounding box (drops the white scan
+  margins so the print isn't shrunk by the surrounding page) and upscale to a working width
+  before Sauvola — small middle-row text now resolves.
+- **`recognize.ts` / `OcrPanel`:** the MyKad is read with **two** page-segmentation passes
+  (PSM 4 + PSM 6) and merged — they capture complementary rows of the card.
+- **`extract.ts`:** the MyKad address is now **assembled by row** (street → locality →
+  postcode → state) and emitted in canonical order regardless of OCR line order, with
+  chrome words and lower-case OCR noise stripped per row.
+- Verified end-to-end in a real browser on an actual MyKad: address extracts cleanly as
+  `NO 38A JALAN 72 / TAMAN BUKIT MEWAH / 43000 KAJANG / SELANGOR`. (Name still surfaces the
+  given names but loses the first letter of the surname, and the NRIC's leading digits can
+  misread — both flagged for operator correction; OCR stays assist-only.)
+
 ## 2026-06-21 (later) — Contract Staff allowance defaults
 
 - Each Contract Staff brand now **pre-fills its standard allowance amounts** (figure +
